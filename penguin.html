@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Finding Penguin 🐧</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#b8d8f0;overflow:hidden;font-family:'Courier New',monospace;user-select:none;-webkit-user-select:none;}
+canvas{display:block;}
+#gc{position:fixed;inset:0;width:100%;height:100%;}
+#hud{position:fixed;top:0;left:0;right:0;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:10;}
+#peng-btn{font-size:24px;cursor:pointer;pointer-events:all;filter:drop-shadow(0 2px 6px rgba(80,140,220,.5));transition:transform .15s;line-height:1;}
+#peng-btn:hover{transform:scale(1.18);}
+#gtitle{color:#fff;font-size:11px;letter-spacing:3px;text-shadow:0 2px 8px rgba(60,120,220,.6);font-weight:bold;}
+#hud-right{display:flex;align-items:center;gap:8px;}
+#warmth{background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.4);border-radius:18px;padding:5px 12px;color:#fff;font-size:11px;letter-spacing:1px;}
+#compass-box{background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.4);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+#action-hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.32);backdrop-filter:blur(6px);border-radius:20px;padding:5px 16px;color:rgba(255,255,255,.8);font-size:10px;letter-spacing:2px;pointer-events:none;z-index:10;transition:opacity .6s;opacity:0;}
+.fullscreen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;text-align:center;}
+#intro-screen{background:linear-gradient(180deg,#a0c4e8 0%,#c4e0f8 45%,#e2f2ff 75%,#f4faff 100%);}
+#intro-canvas{position:absolute;inset:0;width:100%;height:100%;}
+#intro-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:20px;}
+#ititle{font-size:clamp(24px,5vw,50px);color:#1a3a6a;letter-spacing:6px;font-weight:bold;text-shadow:0 2px 14px rgba(100,160,255,.35);margin-bottom:6px;}
+#isub{font-size:clamp(10px,2vw,14px);color:#3a6aaa;letter-spacing:3px;margin-bottom:8px;opacity:.85;}
+#istory{font-size:clamp(10px,1.6vw,13px);color:#5580bb;letter-spacing:1px;margin-bottom:32px;line-height:2;max-width:400px;}
+.glassy-btn{background:rgba(255,255,255,.28);backdrop-filter:blur(12px);border:2px solid rgba(100,180,255,.55);color:#1a3a6a;font-family:'Courier New',monospace;font-size:13px;letter-spacing:4px;padding:12px 40px;cursor:pointer;border-radius:4px;text-transform:uppercase;transition:all .2s;}
+.glassy-btn:hover{background:rgba(255,255,255,.5);transform:translateY(-2px);}
+#found-screen{background:rgba(215,238,255,.97);display:none;}
+#found-screen h2{font-size:30px;color:#1a3a6a;letter-spacing:5px;margin-bottom:10px;animation:hb .6s infinite alternate;}
+#found-screen p{color:#3a6aaa;font-size:13px;letter-spacing:1px;margin-bottom:22px;line-height:2;}
+.dark-btn{background:#1a3a6a;color:#fff;border:none;font-family:'Courier New',monospace;font-size:12px;letter-spacing:3px;padding:10px 32px;cursor:pointer;border-radius:3px;text-transform:uppercase;}
+.dark-btn:hover{background:#2a5aaa;}
+/* MAP */
+#map-ov{position:fixed;inset:0;background:rgba(8,18,45,.88);display:none;align-items:center;justify-content:center;z-index:60;backdrop-filter:blur(5px);}
+#map-box{background:rgba(215,235,255,.97);border:2px solid rgba(100,160,255,.5);border-radius:10px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:96vw;}
+#map-box h3{color:#1a3a6a;font-size:13px;letter-spacing:3px;}
+#map-cv{border:1px solid rgba(100,160,255,.35);border-radius:6px;cursor:crosshair;max-width:calc(96vw - 28px);max-height:62vh;}
+#map-toolbar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.mtb{background:rgba(100,160,255,.12);border:1.5px solid rgba(100,160,255,.35);color:#1a3a6a;font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;padding:5px 9px;cursor:pointer;border-radius:4px;}
+.mtb:hover,.mtb.active{background:rgba(100,160,255,.32);border-color:rgba(100,160,255,.75);}
+#map-legend{display:flex;gap:12px;font-size:10px;color:#3a6aaa;letter-spacing:1px;flex-wrap:wrap;justify-content:center;}
+#map-hint{font-size:9px;color:#5570aa;letter-spacing:1px;text-align:center;}
+/* POI TAG */
+#poi-tag{position:fixed;display:none;background:rgba(255,255,255,.96);border:1.5px solid rgba(100,160,255,.55);border-radius:8px;padding:10px 15px;z-index:40;backdrop-filter:blur(8px);box-shadow:0 4px 18px rgba(70,120,210,.25);max-width:200px;text-align:center;}
+.pt-icon{font-size:24px;margin-bottom:3px;}
+.pt-name{color:#1a3a6a;font-size:12px;letter-spacing:1px;font-weight:bold;margin-bottom:2px;}
+.pt-url{color:#3a7aff;font-size:10px;text-decoration:underline;cursor:pointer;pointer-events:all;display:none;}
+/* ADMIN LOGIN */
+#admin-login{position:fixed;inset:0;background:rgba(8,18,45,.85);display:none;align-items:center;justify-content:center;z-index:80;backdrop-filter:blur(6px);}
+#al-box{background:#fff;border-radius:10px;padding:28px;width:300px;display:flex;flex-direction:column;gap:12px;text-align:center;}
+#al-box h3{color:#1a3a6a;font-size:14px;letter-spacing:3px;}
+#al-box p{color:#5a80bb;font-size:11px;letter-spacing:1px;}
+#al-pw{border:1.5px solid #b0c8e8;border-radius:4px;padding:8px 10px;font-family:'Courier New',monospace;font-size:13px;color:#1a3a6a;outline:none;text-align:center;letter-spacing:4px;width:100%;}
+#al-pw:focus{border-color:#4a8adf;}
+#al-err{color:#cc4444;font-size:10px;letter-spacing:1px;min-height:14px;}
+.al-row{display:flex;gap:8px;}
+.al-btn{flex:1;padding:9px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px;border:none;text-transform:uppercase;}
+.ok{background:#1a3a6a;color:#fff;}.cn{background:#eee;color:#666;}
+/* POI FORM */
+#poi-form{position:fixed;inset:0;background:rgba(8,18,45,.7);display:none;align-items:center;justify-content:center;z-index:75;}
+#pf-box{background:#fff;border-radius:10px;padding:22px;width:300px;display:flex;flex-direction:column;gap:10px;}
+#pf-box h3{color:#1a3a6a;letter-spacing:2px;font-size:13px;}
+#pf-box label{color:#3a6aaa;font-size:9px;letter-spacing:1px;}
+#pf-box input{border:1.5px solid #b0c8e8;border-radius:4px;padding:7px 9px;font-family:'Courier New',monospace;font-size:11px;color:#1a3a6a;outline:none;width:100%;}
+#pf-box input:focus{border-color:#4a8adf;}
+.frow{display:flex;gap:7px;}
+.fbtn{flex:1;padding:8px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:4px;border:none;text-transform:uppercase;}
+/* MOBILE */
+#mob-ctrl{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:none;z-index:20;}
+.dp{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:4px;}
+.db{background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border:1.5px solid rgba(255,255,255,.45);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.db:active{background:rgba(255,255,255,.42);}
+.de{background:transparent;border:none;}
+@keyframes hb{from{transform:scale(1)}to{transform:scale(1.06)}}
+@media(max-width:640px){#mob-ctrl{display:block;}}
+</style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+
+<div id="hud">
+  <div id="peng-btn" title="Double-click for map 🗺">🐧</div>
+  <div id="gtitle">FINDING PENGUIN</div>
+  <div id="hud-right">
+    <div id="warmth">❄️ Searching...</div>
+    <div id="compass-box">❄</div>
+  </div>
+</div>
+<div id="action-hint">J·jump &nbsp;·&nbsp; C·spin &nbsp;·&nbsp; H·wave &nbsp;·&nbsp; B·bow</div>
+
+<!-- INTRO -->
+<div class="fullscreen" id="intro-screen">
+  <canvas id="intro-canvas"></canvas>
+  <div id="intro-content">
+    <div id="ititle">FINDING PENGUIN</div>
+    <div id="isub">a love story in the snow</div>
+    <div id="istory">
+      Waddler wandered off into the endless snowfields,<br>
+      curious and carefree... further and further...<br>
+      until the white swallowed him whole.<br><br>
+      Now Laila sets off to find her mate.
+    </div>
+    <button class="glassy-btn" onclick="startGame()">▶ &nbsp;BEGIN THE SEARCH</button>
+  </div>
+</div>
+
+<!-- FOUND -->
+<div class="fullscreen" id="found-screen">
+  <div style="font-size:64px;margin-bottom:12px;animation:hb .5s infinite alternate">🐧🐧</div>
+  <h2>REUNITED!</h2>
+  <p id="found-msg">Laila found Waddler! 💙</p>
+  <button class="dark-btn" onclick="nextRound()">▶ &nbsp;WANDER AGAIN</button>
+</div>
+
+<!-- MAP -->
+<div id="map-ov" onclick="if(event.target===this)closeMap()">
+  <div id="map-box">
+    <h3>🗺 &nbsp;THE SNOWFIELDS — TOP VIEW</h3>
+    <canvas id="map-cv" width="480" height="480"></canvas>
+    <div id="map-toolbar">
+      <button class="mtb active" id="mt-view" onclick="setMapTool('none',this)">👁 VIEW</button>
+      <button class="mtb" onclick="setMapTool('shop',this)">🏪 SHOP</button>
+      <button class="mtb" onclick="setMapTool('cart',this)">🛒 CART</button>
+      <button class="mtb" onclick="setMapTool('person',this)">👤 PERSON</button>
+      <button class="mtb" onclick="setMapTool('store',this)">🏠 STORE</button>
+      <button class="mtb" onclick="setMapTool('stall',this)">🎪 STALL</button>
+      <button class="mtb" onclick="setMapTool('land',this)">🏔 LANDMARK</button>
+      <button class="mtb" onclick="setMapTool('custom',this)">✏️ CUSTOM</button>
+    </div>
+    <div id="map-legend"><span>🐧 Laila</span><span>💙 Waddler</span><span>⭐ Places</span></div>
+    <div id="map-hint">Double-click map to place • Admin login required</div>
+    <div style="display:flex;gap:8px;">
+      <button class="dark-btn" onclick="closeMap()">✕ CLOSE</button>
+      <button class="dark-btn" style="background:#2a5a2a" onclick="promptAdmin()">🔐 ADMIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- POI TAG -->
+<div id="poi-tag">
+  <div class="pt-icon" id="pt-icon"></div>
+  <div class="pt-name" id="pt-name"></div>
+  <div class="pt-url" id="pt-url" onclick="openPoiLink()"></div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="admin-login">
+  <div id="al-box">
+    <div style="font-size:36px">🔐</div>
+    <h3>ADMIN ACCESS</h3>
+    <p>Enter the password to place items on the map</p>
+    <input type="password" id="al-pw" placeholder="password" maxlength="32"
+      onkeydown="if(event.key==='Enter')tryLogin()"/>
+    <div id="al-err"></div>
+    <div class="al-row">
+      <button class="al-btn ok" onclick="tryLogin()">✓ LOGIN</button>
+      <button class="al-btn cn" onclick="document.getElementById('admin-login').style.display='none'">✕ CANCEL</button>
+    </div>
+    <div style="font-size:9px;color:#bbb;letter-spacing:1px;margin-top:2px">hint: penguin2024</div>
+  </div>
+</div>
+
+<!-- POI FORM -->
+<div id="poi-form">
+  <div id="pf-box">
+    <h3 id="pf-title">ADD PLACE</h3>
+    <label>NAME</label><input id="pf-name" placeholder="e.g. Ice Cream Shop"/>
+    <label>WEBSITE (optional)</label><input id="pf-url-in" placeholder="https://..."/>
+    <label>EMOJI ICON</label><input id="pf-icon" placeholder="🏪" maxlength="4"/>
+    <div class="frow">
+      <button class="fbtn ok" onclick="confirmPoi()">✓ PLACE IT</button>
+      <button class="fbtn cn" onclick="cancelPoi()">✕ CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile -->
+<div id="mob-ctrl">
+  <div class="dp">
+    <div class="de"></div><div class="db" id="mbu">▲</div><div class="de"></div>
+    <div class="db" id="mbl">◀</div><div class="de"></div><div class="db" id="mbr">▶</div>
+    <div class="de"></div><div class="db" id="mbd">▼</div><div class="de"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ════════════════════════════════════════════
+// INTRO 2D ANIMATION
+// ════════════════════════════════════════════
+const IC=document.getElementById('intro-canvas'),IX=IC.getContext('2d');
+let IW,IH,IF=0,introAlive=true;
+const IP={x:-80,y:0,step:0,t:0,alpha:1};
+const IFP=[];let IPhase='walk';
+function rsI(){IW=IC.width=window.innerWidth;IH=IC.height=window.innerHeight;}rsI();
+
+function drawIP(ctx,x,y,st,al,sc){
+  ctx.save();ctx.globalAlpha=Math.max(0,al);ctx.translate(x,y);ctx.scale(sc,sc);
+  const b=st%2?-3:0,lg=st%2?4:-4;
+  ctx.fillStyle='rgba(80,120,190,.16)';ctx.beginPath();ctx.ellipse(0,20,15,5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#111128';ctx.beginPath();ctx.ellipse(0,2+b,11,15,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#f0f2f8';ctx.beginPath();ctx.ellipse(0,4+b,7,10,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#111128';ctx.beginPath();ctx.arc(0,-16+b,11,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(5,-18+b,3.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#000';ctx.beginPath();ctx.arc(6,-18+b,2,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#f0a020';ctx.beginPath();ctx.moveTo(8,-16+b);ctx.lineTo(16,-14+b);ctx.lineTo(8,-12+b);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#111128';
+  ctx.beginPath();ctx.ellipse(-13,-2+b,4,9,-.3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(13,-2+b+lg*.3,4,9,.3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#f0a020';
+  ctx.beginPath();ctx.ellipse(-5,16+b,5,3,.3,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(5,16+b+lg*.3,5,3,-.3,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+function introLoop(){
+  if(!introAlive)return;
+  IX.clearRect(0,0,IW,IH);
+  const gy=IH*.6+60;
+  const sg=IX.createLinearGradient(0,0,0,IH);
+  sg.addColorStop(0,'#98bede');sg.addColorStop(.55,'#c0dcf4');sg.addColorStop(1,'#eaf4ff');
+  IX.fillStyle=sg;IX.fillRect(0,0,IW,IH);
+  IX.fillStyle='#d4e8f8';IX.beginPath();IX.moveTo(0,gy-10);
+  for(let x=0;x<=IW;x+=50)IX.lineTo(x,gy-10+Math.sin(x*.018)*22+Math.sin(x*.04)*9);
+  IX.lineTo(IW,IH);IX.lineTo(0,IH);IX.closePath();IX.fill();
+  IX.fillStyle='#ecf6ff';IX.beginPath();IX.moveTo(0,gy+30);
+  for(let x=0;x<=IW;x+=30)IX.lineTo(x,gy+30+Math.sin(x*.022+1)*10);
+  IX.lineTo(IW,IH);IX.lineTo(0,IH);IX.closePath();IX.fill();
+  IX.fillStyle='rgba(255,255,255,.68)';
+  for(let i=0;i<70;i++){const x=(i*137.5+IF*.32*(i%3+.4))%IW,y=(i*71+IF*.88*(i%2+.5))%IH,s=1+i%4*.7;IX.beginPath();IX.arc(x,y,s,0,Math.PI*2);IX.fill();}
+  IX.fillStyle='rgba(110,155,210,.26)';
+  for(const f of IFP){IX.beginPath();IX.ellipse(f.x,f.y,4,2.5,.3,0,Math.PI*2);IX.fill();IX.beginPath();IX.ellipse(f.x+10,f.y+3,4,2.5,-.3,0,Math.PI*2);IX.fill();}
+  if(IPhase==='walk'){IP.x+=1.3;IP.t+=16;if(IP.t>200){IP.step=(IP.step+1)%4;IP.t=0;if(IFP.length<35)IFP.push({x:IP.x-14,y:gy+8});}if(IP.x>IW*.6)IPhase='fade';}
+  else if(IPhase==='fade'){IP.x+=1.6;IP.alpha-=.007;IP.t+=16;if(IP.t>200){IP.step=(IP.step+1)%4;IP.t=0;}if(IP.alpha<=0){IPhase='done';IP.alpha=0;}}
+  const ta=Math.min(1,IF/80);
+  IX.globalAlpha=ta;IX.fillStyle='#3060aa';IX.font=`${Math.round(Math.max(12,IW*.015))}px 'Courier New'`;IX.textAlign='center';
+  IX.fillText(IP.alpha>.3?'Waddler wandered into the open snowfields...':'...and disappeared into the white',IW/2,IH*.86);
+  IX.globalAlpha=1;drawIP(IX,IP.x,gy,IP.step,IP.alpha,1.4);
+  IF++;requestAnimationFrame(introLoop);
+}
+requestAnimationFrame(introLoop);
+
+// ════════════════════════════════════════════
+// AUDIO
+// ════════════════════════════════════════════
+let ACX=null;
+function initAudio(){if(!ACX)try{ACX=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+function beep(freq,dur,type,vol){
+  if(!ACX)return;try{
+    const o=ACX.createOscillator(),g=ACX.createGain();
+    o.connect(g);g.connect(ACX.destination);
+    o.frequency.value=freq;o.type=type||'triangle';
+    g.gain.setValueAtTime(vol||.1,ACX.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ACX.currentTime+dur);
+    o.start();o.stop(ACX.currentTime+dur);}catch(e){}
+}
+function sStep(){beep(100+Math.random()*20,.06,'triangle',.03);}
+function sFound(){[523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,.28,'triangle',.18),i*115));}
+function sJump(){beep(380,.04,'sine',.12);setTimeout(()=>beep(480,.14,'sine',.07),55);}
+function sWave(){[290,380,330].forEach((f,i)=>setTimeout(()=>beep(f,.07,'triangle',.06),i*75));}
+function sWaddle(){beep(85+Math.random()*20,.1,'triangle',.04);}
+let pingLast=0;
+function sPing(r){const now=Date.now(),iv=Math.max(140,3000-r*2900);if(now-pingLast>iv&&r>.06){beep(350+r*500,.09,'sine',.1*r);pingLast=now;}}
+
+// ════════════════════════════════════════════
+// THREE.JS GAME
+// ════════════════════════════════════════════
+let scene,camera,renderer,gameRunning=false,round=1;
+
+// World — huge
+const WRAD=1400;
+const BSIZ=4;
+
+// --- Terrain formula (shared between build & height sampler) ---
+function terrainH(px,pz){
+  return Math.sin(px*.012)*4+Math.cos(pz*.010)*3.5+Math.sin(px*.025+pz*.02)*1.8+Math.sin(px*.006-pz*.007)*6;
+}
+
+// Penguin scale
+const PS=0.65;
+
+// Laila state
+let lailaGroup=null;
+let lWL,lWR,lFL,lFR,lHead,lBodyMesh;
+const lPos=new THREE.Vector3(); // separate from group
+let lYaw=0,lAnimT=0,lStep=0;
+// State: idle|walk|sit|sleep|rising|jump|circle|wave|bow|waddle
+let lState='idle',prevState='idle',stateT=0;
+let idleT=0,waddleNext=5000+Math.random()*6000,waddleT=0;
+let circleYaw=0;
+
+// Waddler
+let waddlerGroup=null;
+let wWL,wWR,wFL,wFR;
+const wPos=new THREE.Vector3();
+let wYaw=0,wVX=0,wVZ=0,wTimer=0,wAnimT=0,wStep=0;
+
+// Camera
+let camYaw=0;
+const CAM_D=14,CAM_H=8;
+
+// Input
+const K={};
+let TD={x:0,z:0};
+
+// POIs
+const POIS=[];
+let pendPoi=null,nearPoi=null,activePoi=null,mapTool='none';
+const ADMIN_PW='penguin2024';
+let adminOK=false;
+
+// Materials cache
+let M={};
+
+// ── Resize ──────────────────────────────────────────────────
+function onResize(){
+  if(!camera||!renderer)return;
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+}
+window.addEventListener('resize',()=>{rsI();onResize();});
+
+// ── Init Three ───────────────────────────────────────────────
+function initThree(){
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0xb0d4f0);
+  scene.fog=new THREE.FogExp2(0xc0dcf4,.0007);
+
+  camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,.5,1400);
+
+  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('gc'),antialias:true});
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+  // Lights — NO Object.assign (that was the crash!)
+  const amb=new THREE.AmbientLight(0xd0e8ff,.95);
+  scene.add(amb);
+
+  const sun=new THREE.DirectionalLight(0xfff8f0,1.2);
+  sun.position.set(200,350,150);   // <-- .set() NOT Object.assign
+  sun.castShadow=true;
+  sun.shadow.camera.near=1;sun.shadow.camera.far=2200;
+  sun.shadow.camera.left=sun.shadow.camera.bottom=-800;
+  sun.shadow.camera.right=sun.shadow.camera.top=800;
+  sun.shadow.mapSize.set(2048,2048);
+  scene.add(sun);
+
+  const fill=new THREE.DirectionalLight(0xb0d0ff,.4);
+  fill.position.set(-100,60,-80);  // <-- .set() NOT Object.assign
+  scene.add(fill);
+}
+
+// ── Materials ────────────────────────────────────────────────
+function buildMats(){
+  M={
+    snow: new THREE.MeshLambertMaterial({color:0xeef6ff}),
+    snowT:new THREE.MeshLambertMaterial({color:0xffffff}),
+    ice:  new THREE.MeshLambertMaterial({color:0xaaddf8,transparent:true,opacity:.88}),
+    rock: new THREE.MeshLambertMaterial({color:0x9aabbc}),
+    gnd:  new THREE.MeshLambertMaterial({color:0xf2f9ff}),
+    pB:   new THREE.MeshLambertMaterial({color:0x111128}),
+    pW:   new THREE.MeshLambertMaterial({color:0xf0f2f8}),
+    pO:   new THREE.MeshLambertMaterial({color:0xf0a020}),
+    pE:   new THREE.MeshLambertMaterial({color:0xffffff}),
+    pP:   new THREE.MeshLambertMaterial({color:0x050510}),
+    pole: new THREE.MeshLambertMaterial({color:0xddeebb}),
+  };
+}
+
+// ── World ────────────────────────────────────────────────────
+function buildWorld(){
+  const rm=[];scene.children.forEach(o=>{if(!o.isLight)rm.push(o);});rm.forEach(o=>scene.remove(o));
+  buildMats();
+
+  // Ground — huge, matching terrainH formula
+  const GS=WRAD*2.5;
+  const gGeo=new THREE.PlaneGeometry(GS,GS,180,180);
+  const gP=gGeo.attributes.position;
+  for(let i=0;i<gP.count;i++){
+    const px=gP.getX(i),py=gP.getY(i); // plane local X,Y before rotation
+    // After rotation.x=-PI/2: worldY=planeZ, worldZ=-planeY
+    // Fix: pass -py so terrainH(worldX,worldZ) matches boxes/penguins
+    gP.setZ(i,terrainH(px,-py));
+  }
+  gP.needsUpdate=true;gGeo.computeVertexNormals();
+  const gnd=new THREE.Mesh(gGeo,M.gnd);
+  gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;gnd.name='ground';
+  scene.add(gnd);
+
+  // Objects — less ice, varied snow mounds, rocks
+  const seed=Math.random()*9999;
+  function rn(x,z,s){const v=Math.sin(x*127.1+z*311.7+s*74.3)*43758;return v-Math.floor(v);}
+  const CSTEP=3;
+  const CHK=Math.floor(WRAD/BSIZ/CSTEP);
+
+  for(let bx=-CHK;bx<CHK;bx++){
+    for(let bz=-CHK;bz<CHK;bz++){
+      const n=rn(bx,bz,seed),n2=rn(bx,bz,seed+1),n3=rn(bx,bz,seed+2);
+      const wx=(bx+(n-.5)*2)*BSIZ*CSTEP, wz=(bz+(n2-.5)*2)*BSIZ*CSTEP;
+      if(Math.hypot(wx,wz)<25)continue;
+      const gy=terrainH(wx,wz); // place ON ground
+
+      if(n<.022){
+        // Ice spike — rare
+        const h=1.5+n2*3.5;
+        addBox(wx,gy+h/2,wz,BSIZ*.7,h,BSIZ*.7,M.ice);
+      } else if(n<.13){
+        // Snow mound (stacked minecraft blocks)
+        const layers=Math.floor(1+n2*4);
+        for(let l=0;l<layers;l++){
+          const sz=BSIZ*(1-l*.18),bh=BSIZ*.55;
+          addBox(wx,gy+bh*.5+l*bh*.85,wz,sz,bh,sz,l===layers-1?M.snowT:M.snow);
+        }
+      } else if(n<.20){
+        // Rock
+        const cnt=1+Math.floor(n3*3);
+        for(let i=0;i<cnt;i++){
+          const ox=(n3*i-.5)*BSIZ*.9,oz=(n2*i-.5)*BSIZ*.9;
+          const rh=BSIZ*(.3+n3*.5);
+          addBox(wx+ox,gy+rh/2,wz+oz,BSIZ*(.5+n3*.35),rh,BSIZ*(.5+n2*.35),M.rock);
+        }
+      }
+    }
+  }
+
+  // Snowfall — recentred on player each frame
+  const sfGeo=new THREE.BufferGeometry();
+  const N=5000,sfArr=new Float32Array(N*3);
+  for(let i=0;i<N;i++){sfArr[i*3]=(Math.random()-.5)*700;sfArr[i*3+1]=Math.random()*60;sfArr[i*3+2]=(Math.random()-.5)*700;}
+  sfGeo.setAttribute('position',new THREE.BufferAttribute(sfArr,3));
+  const sf=new THREE.Points(sfGeo,new THREE.PointsMaterial({color:0xffffff,size:.3,transparent:true,opacity:.72,depthWrite:false}));
+  sf.name='snowfall';scene.add(sf);
+
+  POIS.forEach(p=>makePOIMesh(p));
+}
+
+function addBox(x,y,z,w,h,d,mat){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;
+}
+
+// ── Penguin ──────────────────────────────────────────────────
+function makePenguin(isW){
+  const g=new THREE.Group();
+  function bx(w,h,d,mat,px,py,pz){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w*PS,h*PS,d*PS),mat);
+    m.position.set(px*PS,py*PS,pz*PS);m.castShadow=true;g.add(m);return m;
+  }
+  const body=bx(1.9,2.4,1.7,M.pB,0,1.2,0);
+  bx(1.26,1.72,.28,M.pW,0,1.1,.86);
+  const head=bx(1.65,1.55,1.55,M.pB,0,2.82,0);
+  bx(.28,.28,.1,M.pE,-.42,2.92,.78);bx(.28,.28,.1,M.pE,.42,2.92,.78);
+  bx(.16,.16,.06,M.pP,-.42,2.92,.83);bx(.16,.16,.06,M.pP,.42,2.92,.83);
+  bx(.5,.32,.55,M.pO,0,2.66,1.0);
+  const wL=bx(.48,1.65,.62,M.pB,-1.18,1.2,0);
+  const wR=bx(.48,1.65,.62,M.pB,1.18,1.2,0);
+  const fL=bx(.72,.22,.95,M.pO,-.5,.12,.28);
+  const fR=bx(.72,.22,.95,M.pO,.5,.12,.28);
+  if(isW){wWL=wL;wWR=wR;wFL=fL;wFR=fR;}
+  else{lWL=wL;lWR=wR;lFL=fL;lFR=fR;lHead=head;lBodyMesh=body;}
+  return g;
+}
+
+// ── Spawn ────────────────────────────────────────────────────
+function spawnAll(){
+  if(lailaGroup){scene.remove(lailaGroup);}
+  if(waddlerGroup){scene.remove(waddlerGroup);}
+
+  lailaGroup=makePenguin(false);
+  lPos.set(0,0,0);
+  lailaGroup.position.set(0,terrainH(0,0)-0.12*PS,0);
+  lYaw=0;camYaw=0;lAnimT=0;lStep=0;
+  lState='idle';stateT=0;idleT=0;waddleT=0;waddleNext=5000+Math.random()*6000;
+  scene.add(lailaGroup);
+
+  waddlerGroup=makePenguin(true);
+  const minD=Math.min(260+round*65,WRAD*.82);
+  const ang=Math.random()*Math.PI*2;
+  const d=minD+Math.random()*120;
+  wPos.set(Math.cos(ang)*d,0,Math.sin(ang)*d);
+  wYaw=0;wVX=0;wVZ=0;wTimer=0;wAnimT=0;wStep=0;
+  waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
+  scene.add(waddlerGroup);
+}
+
+// ── POI ──────────────────────────────────────────────────────
+function makePOIMesh(poi){
+  const cv=document.createElement('canvas');cv.width=128;cv.height=128;
+  const cx=cv.getContext('2d');cx.font='70px serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(poi.icon,64,68);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthWrite:false,sizeAttenuation:true}));
+  sp.scale.set(4*PS,4*PS,1);
+  const py=terrainH(poi.x,poi.z)+5;
+  sp.position.set(poi.x,py,poi.z);
+  sp.userData.poiName=poi.name;
+  scene.add(sp);poi.sprite=sp;
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,5,6),M.pole);
+  const poleY=terrainH(poi.x,poi.z)+2.5;
+  pole.position.set(poi.x,poleY,poi.z);
+  scene.add(pole);poi.pole=pole;
+}
+
+document.getElementById('gc').addEventListener('click',e=>{
+  if(!gameRunning||POIS.length===0)return;
+  const rect=document.getElementById('gc').getBoundingClientRect();
+  const ndc=new THREE.Vector2(((e.clientX-rect.left)/rect.width)*2-1,-((e.clientY-rect.top)/rect.height)*2+1);
+  const ray=new THREE.Raycaster();ray.setFromCamera(ndc,camera);
+  const hits=ray.intersectObjects(POIS.filter(p=>p.sprite).map(p=>p.sprite),false);
+  if(hits.length){const poi=POIS.find(p=>p.name===hits[0].object.userData.poiName);if(poi)showPOI(poi,e.clientX,e.clientY,true);}
+  else{document.getElementById('poi-tag').style.display='none';activePoi=null;}
+});
+
+function showPOI(poi,mx,my,click){
+  activePoi=poi;const t=document.getElementById('poi-tag');
+  document.getElementById('pt-icon').textContent=poi.icon;
+  document.getElementById('pt-name').textContent=poi.name;
+  const ul=document.getElementById('pt-url');
+  if(poi.url){ul.textContent=poi.url.replace(/^https?:\/\//,'');ul.style.display='block';}else ul.style.display='none';
+  t.style.pointerEvents=click?'all':'none';t.style.display='block';
+  if(mx!==undefined){t.style.left=Math.min(mx+12,window.innerWidth-220)+'px';t.style.top=Math.min(my-55,window.innerHeight-120)+'px';t.style.transform='';}
+  else{t.style.left='50%';t.style.top='66%';t.style.transform='translateX(-50%)';}
+}
+function openPoiLink(){if(activePoi&&activePoi.url)window.open(activePoi.url,'_blank');}
+
+// ── Admin / Map ───────────────────────────────────────────────
+function promptAdmin(){document.getElementById('admin-login').style.display='flex';document.getElementById('al-pw').value='';document.getElementById('al-err').textContent='';}
+function tryLogin(){
+  if(document.getElementById('al-pw').value===ADMIN_PW){
+    adminOK=true;document.getElementById('admin-login').style.display='none';
+    document.getElementById('map-hint').textContent='✅ Admin unlocked — double-click map to place selected item';
+  }else{document.getElementById('al-err').textContent='Wrong password.';document.getElementById('al-pw').value='';}
+}
+
+const POI_TYPES={shop:{icon:'🏪',name:'Shop'},cart:{icon:'🛒',name:'Cart'},person:{icon:'👤',name:'Person'},store:{icon:'🏠',name:'Store'},stall:{icon:'🎪',name:'Stall'},land:{icon:'🏔',name:'Landmark'},custom:{icon:'✏️',name:'Custom'},none:{icon:'',name:''}};
+
+function setMapTool(t,el){
+  mapTool=t;
+  document.querySelectorAll('.mtb').forEach(b=>b.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+document.getElementById('map-cv').addEventListener('dblclick',e=>{
+  if(!adminOK){document.getElementById('map-hint').textContent='🔐 Click ADMIN button & login first';return;}
+  if(mapTool==='none')return;
+  const mc=document.getElementById('map-cv');
+  const rect=mc.getBoundingClientRect();
+  const rx=(e.clientX-rect.left)*(mc.width/rect.width);
+  const ry=(e.clientY-rect.top)*(mc.height/rect.height);
+  const half=mc.width/2,scale=mc.width/(WRAD*2.1);
+  const wx=(rx-half)/scale,wz=(ry-half)/scale;
+  const pt=POI_TYPES[mapTool]||POI_TYPES.shop;
+  pendPoi={icon:pt.icon,name:pt.name,x:wx,z:wz};
+  document.getElementById('pf-icon').value=pt.icon;
+  document.getElementById('pf-name').value=pt.name;
+  document.getElementById('pf-url-in').value='';
+  document.getElementById('pf-title').textContent='ADD — '+pt.name.toUpperCase();
+  document.getElementById('poi-form').style.display='flex';
+});
+
+function confirmPoi(){
+  if(!pendPoi)return;
+  pendPoi.name=document.getElementById('pf-name').value||pendPoi.name;
+  pendPoi.url=document.getElementById('pf-url-in').value||'';
+  pendPoi.icon=document.getElementById('pf-icon').value||pendPoi.icon;
+  POIS.push(pendPoi);if(gameRunning)makePOIMesh(pendPoi);
+  pendPoi=null;document.getElementById('poi-form').style.display='none';drawMap();
+}
+function cancelPoi(){pendPoi=null;document.getElementById('poi-form').style.display='none';}
+
+let mapDT=null;
+document.getElementById('peng-btn').addEventListener('click',()=>{
+  if(mapDT){clearTimeout(mapDT);mapDT=null;openMap();}
+  else mapDT=setTimeout(()=>mapDT=null,340);
+});
+function openMap(){if(!gameRunning)return;document.getElementById('map-ov').style.display='flex';drawMap();}
+function closeMap(){document.getElementById('map-ov').style.display='none';}
+
+function drawMap(){
+  const mc=document.getElementById('map-cv'),mX=mc.getContext('2d');
+  const S=mc.width,half=S/2,scale=S/(WRAD*2.1);
+  mX.clearRect(0,0,S,S);
+  const bg=mX.createRadialGradient(half,half,0,half,half,half);
+  bg.addColorStop(0,'#eef6ff');bg.addColorStop(1,'#bcd8f0');
+  mX.fillStyle=bg;mX.fillRect(0,0,S,S);
+  mX.strokeStyle='rgba(100,160,220,.1)';mX.lineWidth=1;
+  for(let i=0;i<=S;i+=S/10){mX.beginPath();mX.moveTo(i,0);mX.lineTo(i,S);mX.stroke();mX.beginPath();mX.moveTo(0,i);mX.lineTo(S,i);mX.stroke();}
+  mX.strokeStyle='rgba(100,160,220,.2)';mX.lineWidth=2;mX.beginPath();mX.arc(half,half,WRAD*scale,0,Math.PI*2);mX.stroke();
+  POIS.forEach(p=>{
+    const px=half+p.x*scale,pz=half+p.z*scale;
+    mX.font='13px serif';mX.textAlign='center';mX.textBaseline='middle';mX.fillText(p.icon,px,pz);
+    mX.fillStyle='rgba(20,50,110,.6)';mX.font='7px Courier New';mX.textBaseline='top';mX.fillText(p.name,px,pz+9);
+  });
+  const wx=half+wPos.x*scale,wz=half+wPos.z*scale;
+  mX.font='16px serif';mX.textAlign='center';mX.textBaseline='middle';mX.fillText('💙',wx,wz);
+  mX.fillStyle='rgba(20,50,110,.55)';mX.font='7px Courier New';mX.textBaseline='top';mX.fillText('Waddler',wx,wz+10);
+  const lx=half+lPos.x*scale,lz=half+lPos.z*scale;
+  mX.fillStyle='#1a3a8a';mX.beginPath();mX.arc(lx,lz,4,0,Math.PI*2);mX.fill();
+  mX.strokeStyle='#1a3a8a';mX.lineWidth=2;mX.beginPath();mX.moveTo(lx,lz);mX.lineTo(lx+Math.sin(lYaw)*11,lz+Math.cos(lYaw)*11);mX.stroke();
+  mX.font='12px serif';mX.textAlign='center';mX.textBaseline='middle';mX.fillText('🐧',lx,lz-12);
+  mX.fillStyle='rgba(20,50,110,.55)';mX.font='7px Courier New';mX.textBaseline='top';mX.fillText('Laila',lx,lz+6);
+  mX.fillStyle='#1a3a6a';mX.font='9px Courier New';mX.textAlign='left';mX.textBaseline='bottom';
+  mX.fillText('Dist: ~'+Math.round(lPos.distanceTo(wPos))+' units | Rnd '+round,8,S-5);
+}
+
+// ── State helpers ─────────────────────────────────────────────
+function setState(s){
+  if(lState===s)return;
+  prevState=lState;lState=s;stateT=0;
+  if(s==='circle')circleYaw=lYaw;
+}
+
+// ── Laila animation ───────────────────────────────────────────
+function applyAnim(dt){
+  if(!lWL)return;
+  stateT+=dt;
+  const t=stateT*.001; // seconds
+
+  // Reset bone transforms each frame
+  lWL.rotation.z=0;lWR.rotation.z=0;
+  lFL.rotation.x=0;lFR.rotation.x=0;
+  if(lHead){lHead.rotation.x=0;lHead.rotation.z=0;}
+  if(lBodyMesh)lBodyMesh.rotation.z=0;
+  lailaGroup.rotation.x=0;
+
+  if(lState==='walk'){
+    const sw=Math.sin(lStep*Math.PI/4)*.38;
+    lWL.rotation.z=sw;lWR.rotation.z=-sw;
+    lFL.rotation.x=-sw*.55;lFR.rotation.x=sw*.55;
+    // body bob handled by position.y offset in loop
+
+  }else if(lState==='sit'){
+    lFL.rotation.x=-.75;lFR.rotation.x=-.75;
+    lWL.rotation.z=.38;lWR.rotation.z=-.38;
+    if(lHead)lHead.rotation.x=.18;
+
+  }else if(lState==='sleep'){
+    const bob=Math.sin(t*1.9)*.04;
+    lailaGroup.rotation.x=-.35;
+    lFL.rotation.x=-1.1;lFR.rotation.x=-1.1;
+    lWL.rotation.z=.55;lWR.rotation.z=-.55;
+    if(lHead)lHead.rotation.x=.45;
+    lailaGroup.position.y=terrainH(lPos.x,lPos.z)-0.8*PS+bob;
+
+  }else if(lState==='rising'){
+    const prog=Math.min(1,t/.65);
+    lFL.rotation.x=-.75*(1-prog);lFR.rotation.x=-.75*(1-prog);
+    lWL.rotation.z=.38*(1-prog);lWR.rotation.z=-.38*(1-prog);
+    if(prevState==='sleep')lailaGroup.rotation.x=-.35*(1-prog);
+    if(prog>=1)setState('idle');
+
+  }else if(lState==='jump'){
+    const prog=Math.min(1,t/.55);
+    const arc=Math.sin(prog*Math.PI)*3.5*PS;
+    lailaGroup.position.y=terrainH(lPos.x,lPos.z)+arc;
+    lWL.rotation.z=arc*.35;lWR.rotation.z=-arc*.35;
+    if(prog>=1)setState('idle');
+
+  }else if(lState==='circle'){
+    lYaw=circleYaw+t*3.0; // spin
+    lWL.rotation.z=Math.sin(t*5)*.3;lWR.rotation.z=-Math.sin(t*5)*.3;
+    if(t>=2.0)setState('idle');
+
+  }else if(lState==='wave'){
+    lWR.rotation.z=-(Math.sin(t*7)*.85+.3);
+    if(lHead)lHead.rotation.x=.12;
+    if(t>=1.4)setState('idle');
+
+  }else if(lState==='bow'){
+    const bow=Math.sin(Math.min(t,1.5)/1.5*Math.PI)*.68;
+    lailaGroup.rotation.x=bow;
+    if(lHead)lHead.rotation.x=-bow*.5;
+    if(t>=2.0)setState('idle');
+
+  }else if(lState==='waddle'){
+    const sw=Math.sin(t*3.2)*.22;
+    if(lBodyMesh)lBodyMesh.rotation.z=sw;
+    lWL.rotation.z=sw+.1;lWR.rotation.z=-sw-.1;
+    lFL.rotation.x=sw*.25;lFR.rotation.x=-sw*.25;
+    if(t>=1.8)setState('idle');
+
+  }else{
+    // idle breathing
+    const br=Math.sin(t*1.7)*.03;
+    lWL.rotation.z=br;lWR.rotation.z=-br;
+  }
+}
+
+// ── Waddler animation ─────────────────────────────────────────
+function animW(step){
+  if(!wWL)return;
+  const sw=Math.sin(step*Math.PI/4)*.38;
+  wWL.rotation.z=sw;wWR.rotation.z=-sw;wFL.rotation.x=-sw*.55;wFR.rotation.x=sw*.55;
+}
+
+// ── Snow ──────────────────────────────────────────────────────
+function tickSnow(dt){
+  const sf=scene.getObjectByName('snowfall');if(!sf)return;
+  const pos=sf.geometry.attributes.position;
+  const drift=Math.sin(Date.now()*.0003)*.005;
+  for(let i=0;i<pos.count;i++){
+    let y=pos.getY(i)-dt*.002;if(y<-1)y=60;
+    pos.setY(i,y);pos.setX(i,pos.getX(i)+drift);
+  }
+  pos.needsUpdate=true;
+}
+
+// ── Camera ────────────────────────────────────────────────────
+function updateCam(){
+  // Track lYaw: camera sits behind penguin (at +Z when lYaw=0, penguin moves -Z)
+  const diff=((lYaw-camYaw)+Math.PI*3)%(Math.PI*2)-Math.PI;
+  camYaw+=diff*.08;
+  const gy=terrainH(lPos.x,lPos.z);
+  camera.position.set(lPos.x+Math.sin(camYaw)*CAM_D,gy+CAM_H,lPos.z+Math.cos(camYaw)*CAM_D);
+  camera.lookAt(lPos.x,gy+2*PS,lPos.z);
+}
+
+// ── HUD ───────────────────────────────────────────────────────
+function updateHUD(){
+  const dx=wPos.x-lPos.x,dz=wPos.z-lPos.z,d=Math.hypot(dx,dz);
+  let txt='🌨️ Very far away...';
+  if(d<10)txt='🔥🔥 ALMOST THERE!!';
+  else if(d<28)txt='🔥 Very close!!';
+  else if(d<70)txt='🟡 Getting warmer!';
+  else if(d<150)txt='🔵 Somewhere nearby...';
+  else if(d<300)txt='❄️ Far away...';
+  document.getElementById('warmth').textContent=txt;
+  const wa=Math.atan2(dx,dz),rel=((wa-lYaw)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+  const ARR=['⬆️','↗️','➡️','↘️','⬇️','↙️','⬅️','↖️'];
+  document.getElementById('compass-box').textContent=d<12?'💙':ARR[Math.round(rel/(Math.PI/4))%8];
+  sPing(Math.max(0,1-d/600));
+  if(d<6)foundPenguin();
+  // nearby POI
+  let cl=null,cd=28;
+  POIS.forEach(p=>{const pd=Math.hypot(p.x-lPos.x,p.z-lPos.z);if(pd<cd){cd=pd;cl=p;}});
+  if(cl!==nearPoi){nearPoi=cl;if(cl)showPOI(cl,undefined,undefined,true);else if(!activePoi)document.getElementById('poi-tag').style.display='none';}
+}
+
+// ── MAIN LOOP ─────────────────────────────────────────────────
+const SPEED=.11; // slow, deliberate penguin walk
+let lastMS=0;
+
+function gameLoop(ts){
+  requestAnimationFrame(gameLoop);
+  const dt=Math.min(ts-lastMS,80);lastMS=ts;
+  idleT+=dt;waddleT+=dt;
+  if(!gameRunning){if(renderer)renderer.render(scene,camera);return;}
+
+  // ── Input ───────────────────────────────────────────────
+  const tl=K['ArrowLeft']||K['a']||K['A'];
+  const tr=K['ArrowRight']||K['d']||K['D'];
+  const tf=K['ArrowUp']||K['w']||K['W'];
+  const tb=K['ArrowDown']||K['s']||K['S'];
+  const anyMove=tl||tr||tf||tb||Math.abs(TD.x)>.01||Math.abs(TD.z)>.01;
+
+  // Turn
+  if(tl)lYaw-=.024;
+  if(tr)lYaw+=.024;
+  lYaw+=TD.z*.028;
+
+  // State transitions
+  const inAction=['jump','circle','wave','bow'].includes(lState);
+
+  if(!inAction){
+    if(anyMove){
+      if(lState==='sit'||lState==='sleep'||lState==='waddle')setState('rising');
+      else if(lState!=='rising'&&lState!=='walk')setState('walk');
+      idleT=0;waddleT=0;
+    }else{
+      if(lState==='walk')setState('idle');
+      if(lState==='idle'){
+        if(idleT>9000){setState('sit');idleT=0;}
+      }
+      if(lState==='sit'&&stateT>7000)setState('sleep');
+      if(lState==='idle'&&waddleT>waddleNext){
+        setState('waddle');waddleT=0;waddleNext=5000+Math.random()*7000;sWaddle();
+      }
+    }
+  }
+
+  // ── Movement ───────────────────────────────────────────
+  const canMove=(lState==='walk'||lState==='rising'||lState==='idle')&&!inAction&&lState!=='sit'&&lState!=='sleep';
+  let mx=0,mz=0;
+  if(canMove){
+    // rotation.y=-lYaw so penguin's local -Z is world direction (sin(lYaw),cos(lYaw))
+    // Forward = that direction; camera sits at +lYaw+PI offset (behind)
+    const fX=-Math.sin(lYaw),fZ=-Math.cos(lYaw);
+    if(tf){mx+=fX;mz+=fZ;}      // ↑ FORWARD (into screen away from camera)
+    if(tb){mx-=fX;mz-=fZ;}      // ↓ BACKWARD (toward camera)
+    if(Math.abs(TD.x)>.01){mx+=fX*TD.x;mz+=fZ*TD.x;}
+  }
+  const moving=Math.abs(mx)>.0005||Math.abs(mz)>.0005;
+  if(moving){
+    const len=Math.hypot(mx,mz)||1,spd=SPEED*dt*.5,LIM=WRAD*.9;
+    lPos.x=Math.max(-LIM,Math.min(LIM,lPos.x+(mx/len)*spd));
+    lPos.z=Math.max(-LIM,Math.min(LIM,lPos.z+(mz/len)*spd));
+    lAnimT+=dt;if(lAnimT>230){lStep=(lStep+1)%8;lAnimT=0;sStep();}
+  }
+
+  // ── Position Laila ON terrain ────────────────────────────
+  const gy=terrainH(lPos.x,lPos.z);
+  // Default Y (most states) = on the ground
+  if(lState!=='sleep'&&lState!=='jump'){
+    // Offset so penguin feet (at local y=0.12*PS) land exactly on terrain
+    lailaGroup.position.set(lPos.x, gy - 0.12*PS, lPos.z);
+  } else {
+    lailaGroup.position.x=lPos.x;
+    lailaGroup.position.z=lPos.z;
+    if(lState==='sleep')lailaGroup.position.y=gy-0.9*PS;
+    // jump: applyAnim sets position.y
+  }
+  lailaGroup.rotation.y=-lYaw;
+  applyAnim(dt);
+
+  // ── Waddler ───────────────────────────────────────────────
+  wTimer-=dt;
+  if(wTimer<=0){
+    wTimer=2000+Math.random()*3500;
+    const a=Math.random()*Math.PI*2;wVX=Math.cos(a)*.04;wVZ=Math.sin(a)*.04;wYaw=a;
+  }
+  const WL=WRAD*.88;
+  wPos.x=Math.max(-WL,Math.min(WL,wPos.x+wVX));
+  wPos.z=Math.max(-WL,Math.min(WL,wPos.z+wVZ));
+  // Always on terrain
+  waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
+  waddlerGroup.rotation.y=wYaw;  // consistent with visual direction
+  wAnimT+=dt;if(wAnimT>240){wStep=(wStep+1)%8;wAnimT=0;}
+  animW(wStep);
+
+  // Snowfall follows player
+  const sf=scene.getObjectByName('snowfall');
+  if(sf){sf.position.x=lPos.x;sf.position.z=lPos.z;}
+
+  // Float POI sprites
+  POIS.forEach(p=>{if(p.sprite)p.sprite.position.y=terrainH(p.x,p.z)+5+Math.sin(Date.now()*.0018)*.3;});
+
+  tickSnow(dt);updateCam();updateHUD();
+
+  // Action hint
+  const hint=document.getElementById('action-hint');
+  const resting=lState==='idle'||lState==='sit'||lState==='sleep';
+  hint.style.opacity=resting?'0.75':'0';
+
+  renderer.render(scene,camera);
+}
+
+// ── Found / Next ──────────────────────────────────────────────
+function foundPenguin(){
+  gameRunning=false;sFound();
+  document.getElementById('found-msg').textContent=`Laila found Waddler! 💙\nRound ${round} complete.`;
+  document.getElementById('found-screen').style.display='flex';
+}
+function nextRound(){round++;document.getElementById('found-screen').style.display='none';spawnAll();gameRunning=true;}
+function startGame(){
+  initAudio();introAlive=false;document.getElementById('intro-screen').style.display='none';
+  initThree();buildWorld();spawnAll();gameRunning=true;requestAnimationFrame(gameLoop);
+}
+
+// ── Input ──────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
+  K[e.key]=true;
+  if(!gameRunning)return;
+  const inAction=['jump','circle','wave','bow'].includes(lState);
+  const resting=!['walk','rising'].includes(lState)&&!inAction;
+  if(resting){
+    if(e.key==='j'||e.key==='J'){setState('jump');sJump();}
+    if(e.key==='c'||e.key==='C')setState('circle');
+    if(e.key==='h'||e.key==='H'){setState('wave');sWave();}
+    if(e.key==='b'||e.key==='B')setState('bow');
+  }
+});
+document.addEventListener('keyup',e=>{K[e.key]=false;});
+
+// D-pad
+[['mbu','ArrowUp'],['mbd','ArrowDown'],['mbl','ArrowLeft'],['mbr','ArrowRight']].forEach(([id,k])=>{
+  const el=document.getElementById(id);if(!el)return;
+  el.addEventListener('touchstart',ev=>{K[k]=true;ev.preventDefault();},{passive:false});
+  el.addEventListener('touchend',ev=>{K[k]=false;ev.preventDefault();},{passive:false});
+  el.addEventListener('mousedown',()=>K[k]=true);
+  el.addEventListener('mouseup',()=>K[k]=false);
+});
+
+// Touch
+let tID=null,tOrig=null;
+document.getElementById('gc').addEventListener('touchstart',e=>{
+  e.preventDefault();initAudio();const t=e.changedTouches[0];tID=t.identifier;tOrig={x:t.clientX,y:t.clientY};
+},{passive:false});
+document.getElementById('gc').addEventListener('touchmove',e=>{
+  e.preventDefault();for(const t of e.changedTouches){if(t.identifier!==tID)continue;const dx=t.clientX-tOrig.x,dy=t.clientY-tOrig.y;const mag=Math.hypot(dx,dy);if(mag>12){TD.x=-dy/mag;TD.z=dx/mag;}}
+},{passive:false});
+document.getElementById('gc').addEventListener('touchend',e=>{e.preventDefault();TD.x=0;TD.z=0;tID=null;tOrig=null;},{passive:false});
+</script>
+</body>
+</html>

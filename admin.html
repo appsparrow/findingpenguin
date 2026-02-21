@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finding Penguin — Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:linear-gradient(135deg,#0d1f45 0%,#1a3a6a 100%);min-height:100vh;font-family:'Courier New',monospace;color:#e0eeff;font-size:15px;}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+#login-box{background:rgba(255,255,255,.06);border:1.5px solid rgba(100,160,255,.2);border-radius:18px;padding:48px 44px;width:400px;text-align:center;backdrop-filter:blur(20px);}
+.login-logo{font-size:56px;margin-bottom:14px;}
+.login-title{font-size:24px;letter-spacing:4px;color:#90c8ff;margin-bottom:6px;}
+.login-sub{font-size:14px;letter-spacing:2px;color:#5a80bb;margin-bottom:32px;}
+.pw-inp{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(100,160,255,.2);border-radius:8px;padding:14px;font-family:'Courier New',monospace;font-size:16px;color:#e0eeff;letter-spacing:3px;outline:none;text-align:center;margin-bottom:8px;}
+.pw-inp:focus{border-color:rgba(100,160,255,.55);}
+.login-err{color:#ff9999;font-size:13px;letter-spacing:1px;min-height:20px;margin-bottom:10px;}
+.btn-login{width:100%;background:linear-gradient(135deg,#1a4aaa,#2a6add);border:none;border-radius:8px;padding:15px;font-family:'Courier New',monospace;font-size:15px;letter-spacing:4px;color:#fff;cursor:pointer;text-transform:uppercase;}
+.btn-login:hover{opacity:.9;}
+
+/* ── PANEL ── */
+#panel{display:none;max-width:980px;margin:0 auto;padding:32px 20px 60px;}
+
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.panel-title{font-size:24px;letter-spacing:4px;color:#90c8ff;}
+.panel-title span{font-size:14px;letter-spacing:2px;color:#4a7acc;display:block;margin-top:3px;}
+.btn-logout{background:rgba(255,100,100,.12);border:1px solid rgba(255,100,100,.25);border-radius:6px;padding:10px 20px;font-family:'Courier New',monospace;font-size:13px;letter-spacing:2px;color:#ff9999;cursor:pointer;text-transform:uppercase;}
+.btn-logout:hover{background:rgba(255,100,100,.22);}
+
+/* ── TWO-COLUMN LAYOUT ── */
+.cols{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
+
+/* ── ADD FORM CARD ── */
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(100,160,255,.15);border-radius:14px;padding:24px;}
+.card-title{font-size:14px;letter-spacing:2px;color:#80b8ee;margin-bottom:18px;text-transform:uppercase;}
+
+/* Type selector grid */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.tg-btn{background:rgba(255,255,255,.06);border:1.5px solid rgba(100,160,255,.18);border-radius:10px;padding:13px 8px;cursor:pointer;text-align:center;transition:all .15s;}
+.tg-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(100,160,255,.45);}
+.tg-btn.sel{background:rgba(100,160,255,.18);border-color:#4a8aff;box-shadow:0 2px 10px rgba(74,138,255,.2);}
+.tg-icon{font-size:26px;line-height:1;margin-bottom:6px;}
+.tg-label{font-size:12px;letter-spacing:1.5px;color:#8ab0dd;text-transform:uppercase;}
+
+.field-label{font-size:13px;letter-spacing:1.5px;color:#6090cc;display:block;margin-bottom:6px;text-transform:uppercase;}
+.field-inp{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(100,160,255,.18);border-radius:7px;padding:12px 14px;font-family:'Courier New',monospace;font-size:15px;color:#e0eeff;outline:none;margin-bottom:14px;}
+.field-inp:focus{border-color:rgba(100,160,255,.55);background:rgba(255,255,255,.1);}
+.field-inp::placeholder{color:#4a6a9a;}
+
+/* Coord row */
+.coord-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+
+.btn-save{width:100%;background:linear-gradient(135deg,#1a4aaa,#2a6add);border:none;border-radius:8px;padding:15px;font-family:'Courier New',monospace;font-size:14px;letter-spacing:3px;color:#fff;cursor:pointer;text-transform:uppercase;margin-top:4px;}
+.btn-save:hover{opacity:.9;}
+
+/* ── MAP ── */
+.map-wrap{position:relative;}
+#admin-map{border:1px solid rgba(100,160,255,.2);border-radius:10px;display:block;width:100%;cursor:crosshair;}
+.map-legend{font-size:12px;color:#5a80bb;letter-spacing:1px;margin-top:10px;line-height:2.1;}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+
+/* ── PLACES LIST ── */
+.list-header{display:flex;align-items:center;justify-content:space-between;margin:28px 0 14px;}
+.list-header h3{font-size:15px;letter-spacing:2px;color:#80b8ee;text-transform:uppercase;}
+.list-count{font-size:13px;color:#4a7acc;letter-spacing:1px;}
+
+.poi-list{display:flex;flex-direction:column;gap:10px;}
+.poi-row{background:rgba(255,255,255,.04);border:1px solid rgba(100,160,255,.1);border-radius:9px;padding:14px 16px;display:flex;align-items:center;gap:14px;transition:background .15s;}
+.poi-row:hover{background:rgba(100,160,255,.07);}
+.poi-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.poi-info{flex:1;min-width:0;}
+.poi-name{font-size:15px;letter-spacing:1px;color:#c0d8f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.poi-meta{font-size:12px;color:#4a6a9a;letter-spacing:1px;margin-top:4px;}
+.poi-type-badge{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;background:rgba(100,160,255,.12);border:1px solid rgba(100,160,255,.2);border-radius:8px;padding:3px 10px;color:#7090cc;white-space:nowrap;}
+.poi-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-sm{background:none;border:1px solid rgba(100,160,255,.18);border-radius:6px;padding:7px 13px;font-size:13px;cursor:pointer;color:#8ab0dd;transition:all .15s;}
+.btn-sm:hover{background:rgba(100,160,255,.12);border-color:rgba(100,160,255,.4);}
+.btn-sm.del:hover{background:rgba(255,80,80,.1);border-color:rgba(255,80,80,.3);color:#ff9999;}
+
+.empty-msg{text-align:center;padding:36px;color:#3a5a8a;font-size:14px;letter-spacing:1px;}
+
+/* ── DATA STRIP ── */
+.data-strip{background:rgba(255,255,255,.04);border:1px solid rgba(100,160,255,.12);border-radius:10px;padding:16px 20px;margin-top:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.data-strip p{font-size:13px;color:#4a7acc;letter-spacing:1px;flex:1;}
+.btn-data{background:rgba(100,160,255,.1);border:1px solid rgba(100,160,255,.2);border-radius:6px;padding:10px 18px;font-family:'Courier New',monospace;font-size:13px;letter-spacing:2px;color:#90c8ff;cursor:pointer;text-transform:uppercase;transition:all .15s;}
+.btn-data:hover{background:rgba(100,160,255,.2);}
+.btn-data.danger:hover{background:rgba(255,80,80,.12);border-color:rgba(255,80,80,.3);color:#ff9999;}
+
+/* ── NOTIF ── */
+#notif{position:fixed;top:18px;right:18px;background:rgba(20,60,20,.95);border:1px solid rgba(80,200,80,.35);border-radius:10px;padding:12px 22px;font-size:14px;letter-spacing:1px;color:#aaffaa;z-index:100;display:none;}
+
+@media(max-width:700px){
+  .cols{grid-template-columns:1fr;}
+  .type-grid{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div id="login-box">
+    <div class="login-logo">🐧</div>
+    <div class="login-title">FINDING PENGUIN</div>
+    <div class="login-sub">Admin Panel</div>
+    <input type="password" class="pw-inp" id="pw" placeholder="password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-err" id="pw-err"></div>
+    <button class="btn-login" onclick="doLogin()">🔐 &nbsp;LOGIN</button>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="panel">
+  <div class="panel-header">
+    <div class="panel-title">
+      🐧 FINDING PENGUIN
+      <span>World Editor</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">✕ Logout</button>
+  </div>
+
+  <div class="cols">
+    <!-- LEFT: Add form + map -->
+    <div>
+      <div class="card">
+        <div class="card-title">Add to World</div>
+
+        <!-- Type grid -->
+        <div class="type-grid" id="type-grid">
+          <div class="tg-btn sel" data-type="person" onclick="selType('person',this)">
+            <div class="tg-icon">🐧</div>
+            <div class="tg-label">Person</div>
+          </div>
+          <div class="tg-btn" data-type="shop" onclick="selType('shop',this)">
+            <div class="tg-icon">🏪</div>
+            <div class="tg-label">Shop</div>
+          </div>
+          <div class="tg-btn" data-type="store" onclick="selType('store',this)">
+            <div class="tg-icon">🏬</div>
+            <div class="tg-label">Store</div>
+          </div>
+          <div class="tg-btn" data-type="stall" onclick="selType('stall',this)">
+            <div class="tg-icon">🎪</div>
+            <div class="tg-label">Stall</div>
+          </div>
+          <div class="tg-btn" data-type="land" onclick="selType('land',this)">
+            <div class="tg-icon">🏔</div>
+            <div class="tg-label">Landmark</div>
+          </div>
+        </div>
+
+        <label class="field-label">Name</label>
+        <input class="field-inp" id="f-name" placeholder="e.g. Igloo Café">
+
+        <label class="field-label">Website (optional)</label>
+        <input class="field-inp" id="f-url" placeholder="https://...">
+
+        <label class="field-label">Position (click map →)</label>
+        <div class="coord-row">
+          <input class="field-inp" id="f-x" type="number" placeholder="X" value="0" style="margin-bottom:0">
+          <input class="field-inp" id="f-z" type="number" placeholder="Z" value="0" style="margin-bottom:0">
+        </div>
+
+        <button class="btn-save" id="save-btn" onclick="saveItem()">✓ &nbsp;ADD TO WORLD</button>
+      </div>
+
+      <!-- Map -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">World Map <span style="font-size:8px;color:#4a6a9a;letter-spacing:1px;text-transform:none">— click to set position</span></div>
+        <div class="map-wrap">
+          <canvas id="admin-map" width="480" height="480"></canvas>
+        </div>
+        <div class="map-legend" id="map-legend"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Places list -->
+    <div>
+      <div class="list-header">
+        <h3>Places in World</h3>
+        <span class="list-count" id="list-count">0 places</span>
+      </div>
+      <div class="poi-list" id="poi-list"></div>
+
+      <div class="data-strip">
+        <p>Data stored in browser. Export JSON to back up or share.</p>
+        <button class="btn-data" onclick="exportJSON()">⬇ Export JSON</button>
+        <label class="btn-data" style="cursor:pointer">⬆ Import
+          <input type="file" accept=".json" style="display:none" onchange="importJSON(event)">
+        </label>
+        <button class="btn-data danger" onclick="clearAll()">🗑 Clear all</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="notif"></div>
+
+<script>
+const PW = 'penguin2024';
+const KEY = 'fp_pois';
+const WRAD = 1400;
+
+// type meta
+const TYPE_META = {
+  person: {label:'Person',  color:'#5588ff'},
+  shop:   {label:'Shop',    color:'#ff8844'},
+  store:  {label:'Store',   color:'#44aa66'},
+  stall:  {label:'Stall',   color:'#cc44aa'},
+  land:   {label:'Landmark',color:'#8888cc'},
+};
+
+let selectedType = 'person';
+let editingId = null;
+
+// ── Auth ──────────────────────────────────────────────────────
+function doLogin(){
+  if(document.getElementById('pw').value===PW){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('panel').style.display='block';
+    render();
+  } else {
+    document.getElementById('pw-err').textContent='Incorrect password.';
+    document.getElementById('pw').value='';
+  }
+}
+function doLogout(){
+  document.getElementById('panel').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('pw').value='';
+}
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ── Data ─────────────────────────────────────────────────────
+function getPOIs(){try{const d=localStorage.getItem(KEY);return d?JSON.parse(d):[]}catch(e){return[];}}
+function setPOIs(p){localStorage.setItem(KEY,JSON.stringify(p));}
+
+// ── Type select ───────────────────────────────────────────────
+function selType(t,el){
+  selectedType=t;
+  document.querySelectorAll('.tg-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ── Save ──────────────────────────────────────────────────────
+function saveItem(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){
+    document.getElementById('f-name').focus();
+    document.getElementById('f-name').style.borderColor='#ff6688';
+    return;
+  }
+  document.getElementById('f-name').style.borderColor='';
+
+  const pois=getPOIs();
+  if(editingId){
+    const idx=pois.findIndex(p=>p.id===editingId);
+    if(idx>=0){
+      pois[idx]={
+        ...pois[idx],
+        type:selectedType,
+        name,
+        url:document.getElementById('f-url').value.trim(),
+        x:parseFloat(document.getElementById('f-x').value)||0,
+        z:parseFloat(document.getElementById('f-z').value)||0,
+      };
+    }
+    editingId=null;
+    document.getElementById('save-btn').textContent='✓  ADD TO WORLD';
+  } else {
+    const personCount=pois.filter(p=>p.type==='person').length;
+    pois.push({
+      id:'poi_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+      type:selectedType,
+      name,
+      url:document.getElementById('f-url').value.trim(),
+      x:parseFloat(document.getElementById('f-x').value)||0,
+      z:parseFloat(document.getElementById('f-z').value)||0,
+      _variantIdx: selectedType==='person'?personCount:0,
+    });
+  }
+  setPOIs(pois);
+  // Reset form
+  document.getElementById('f-name').value='';
+  document.getElementById('f-url').value='';
+  document.getElementById('f-x').value='0';
+  document.getElementById('f-z').value='0';
+  render();
+  notify(editingId?'✅ Updated':'✅ Added to world');
+}
+
+// ── Edit / Delete ─────────────────────────────────────────────
+function editItem(id){
+  const pois=getPOIs();
+  const p=pois.find(x=>x.id===id);
+  if(!p)return;
+  editingId=id;
+  // Set type
+  selType(p.type||'shop',document.querySelector(`.tg-btn[data-type="${p.type||'shop'}"]`)||document.querySelector('.tg-btn'));
+  document.getElementById('f-name').value=p.name||'';
+  document.getElementById('f-url').value=p.url||'';
+  document.getElementById('f-x').value=Math.round(p.x)||0;
+  document.getElementById('f-z').value=Math.round(p.z)||0;
+  document.getElementById('save-btn').textContent='✓  SAVE CHANGES';
+  document.getElementById('f-name').focus();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function cancelEdit(){
+  editingId=null;
+  document.getElementById('save-btn').textContent='✓  ADD TO WORLD';
+  document.getElementById('f-name').value='';
+  document.getElementById('f-url').value='';
+  document.getElementById('f-x').value='0';
+  document.getElementById('f-z').value='0';
+}
+
+function deleteItem(id){
+  const pois=getPOIs();
+  const p=pois.find(x=>x.id===id);
+  if(!p||!confirm(`Delete "${p.name}"?`))return;
+  setPOIs(pois.filter(x=>x.id!==id));
+  if(editingId===id)cancelEdit();
+  render();
+  notify('🗑 Deleted');
+}
+
+// ── Render ────────────────────────────────────────────────────
+function render(){
+  renderList();
+  drawMap();
+  renderLegend();
+}
+
+function renderList(){
+  const pois=getPOIs();
+  document.getElementById('list-count').textContent=pois.length+' place'+(pois.length!==1?'s':'');
+  const el=document.getElementById('poi-list');
+  if(!pois.length){el.innerHTML='<div class="empty-msg">No places yet. Add one using the form.</div>';return;}
+  el.innerHTML=pois.map(p=>{
+    const m=TYPE_META[p.type]||{label:'Place',color:'#888'};
+    return `<div class="poi-row">
+      <div class="poi-dot" style="background:${m.color}"></div>
+      <div class="poi-info">
+        <div class="poi-name">${esc(p.name)}</div>
+        <div class="poi-meta">X:${Math.round(p.x)}, Z:${Math.round(p.z)}${p.url?' · '+esc(p.url.replace(/^https?:\/\//,'').substring(0,28)):''}</div>
+      </div>
+      <div class="poi-type-badge">${m.label}</div>
+      <div class="poi-actions">
+        <button class="btn-sm" onclick="editItem('${p.id}')">✏️</button>
+        <button class="btn-sm del" onclick="deleteItem('${p.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderLegend(){
+  const parts=Object.entries(TYPE_META).map(([k,v])=>
+    `<span><span class="legend-dot" style="background:${v.color}"></span>${v.label}</span>`
+  ).join(' &nbsp;');
+  document.getElementById('map-legend').innerHTML=parts+
+    ' &nbsp;<span><span class="legend-dot" style="background:#1a6aff"></span>Laila</span>'+
+    ' &nbsp;<span><span class="legend-dot" style="background:#44aaff"></span>Waddler</span>';
+}
+
+// ── Map ───────────────────────────────────────────────────────
+function drawMap(){
+  const mc=document.getElementById('admin-map'),ctx=mc.getContext('2d');
+  const S=mc.width,half=S/2,scale=S/(WRAD*2.1);
+  ctx.clearRect(0,0,S,S);
+  // bg
+  const bg=ctx.createRadialGradient(half,half,0,half,half,half);
+  bg.addColorStop(0,'#182840');bg.addColorStop(1,'#0d1828');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
+  // grid
+  ctx.strokeStyle='rgba(100,160,220,.07)';ctx.lineWidth=1;
+  for(let i=0;i<=S;i+=S/10){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,S);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(S,i);ctx.stroke();}
+  // boundary
+  ctx.strokeStyle='rgba(100,160,220,.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(half,half,WRAD*scale,0,Math.PI*2);ctx.stroke();
+  // spawn clear zone
+  ctx.strokeStyle='rgba(80,200,80,.12)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(half,half,25*scale,0,Math.PI*2);ctx.stroke();
+  // POIs
+  const pois=getPOIs();
+  pois.forEach(p=>{
+    const m=TYPE_META[p.type]||{color:'#888'};
+    const px=half+p.x*scale,pz=half+p.z*scale;
+    ctx.fillStyle=m.color;ctx.beginPath();ctx.arc(px,pz,5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle='rgba(200,220,255,.7)';ctx.font='7px Courier New';ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(p.name.substring(0,10),px,pz+7);
+  });
+  // stats
+  ctx.fillStyle='rgba(100,150,200,.5)';ctx.font='9px Courier New';ctx.textAlign='left';ctx.textBaseline='bottom';
+  ctx.fillText(pois.length+' place'+(pois.length!==1?'s':''),6,S-5);
+}
+
+// Click map → set coords
+document.getElementById('admin-map').addEventListener('click',e=>{
+  const mc=document.getElementById('admin-map');
+  const rect=mc.getBoundingClientRect();
+  const rx=(e.clientX-rect.left)*(mc.width/rect.width);
+  const ry=(e.clientY-rect.top)*(mc.height/rect.height);
+  const half=mc.width/2,scale=mc.width/(WRAD*2.1);
+  const wx=Math.round((rx-half)/scale),wz=Math.round((ry-half)/scale);
+  document.getElementById('f-x').value=wx;
+  document.getElementById('f-z').value=wz;
+  // Flash the coord fields briefly
+  [document.getElementById('f-x'),document.getElementById('f-z')].forEach(el=>{
+    el.style.borderColor='#4aff88';setTimeout(()=>el.style.borderColor='',600);
+  });
+});
+
+// ── Export / Import / Clear ───────────────────────────────────
+function exportJSON(){
+  const data={pois:getPOIs(),_exported:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pois.json';a.click();
+  notify('⬇ Exported pois.json');
+}
+function importJSON(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.pois&&Array.isArray(data.pois)){
+        setPOIs(data.pois);render();notify('⬆ Imported '+data.pois.length+' places');
+      } else throw 0;
+    }catch{alert('Invalid JSON. Expected {pois:[...]}.');}
+    ev.target.value='';
+  };r.readAsText(f);
+}
+function clearAll(){
+  if(!confirm('Delete ALL places? Cannot be undone.'))return;
+  setPOIs([]);cancelEdit();render();notify('🗑 All places cleared');
+}
+
+// ── Notify ────────────────────────────────────────────────────
+let notifTO=null;
+function notify(msg){
+  const el=document.getElementById('notif');el.textContent=msg;el.style.display='block';
+  if(notifTO)clearTimeout(notifTO);notifTO=setTimeout(()=>el.style.display='none',2600);
+}
+
+// ── Util ──────────────────────────────────────────────────────
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
