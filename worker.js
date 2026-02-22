@@ -53,18 +53,18 @@ export default {
       if (!id) return json({ error: 'missing id' }, 400);
 
       const key = 'click:' + id;
-      const current = parseInt(await env.ANALYTICS.get(key) || '0');
-      await env.ANALYTICS.put(key, String(current + 1));
+      const current = parseInt(await env.FPANALYTICS.get(key) || '0');
+      await env.FPANALYTICS.put(key, String(current + 1));
       return json({ ok: true, id, count: current + 1 });
     }
 
     // ── GET /stats ──────────────────────────────────────────────
     if (request.method === 'GET' && path === '/stats') {
-      const list = await env.ANALYTICS.list({ prefix: 'click:' });
+      const list = await env.FPANALYTICS.list({ prefix: 'click:' });
       const stats = {};
       for (const key of list.keys) {
         const poiId = key.name.replace('click:', '');
-        stats[poiId] = parseInt(await env.ANALYTICS.get(key.name) || '0');
+        stats[poiId] = parseInt(await env.FPANALYTICS.get(key.name) || '0');
       }
       return json(stats);
     }
@@ -75,13 +75,13 @@ export default {
     if (request.method === 'POST' && path === '/session') {
       const body = await request.json().catch(() => ({}));
       const sid = body.sid || 'unknown';
-      await env.ANALYTICS.put('session:' + sid, '1', { expirationTtl: 35 });
+      await env.FPANALYTICS.put('session:' + sid, '1', { expirationTtl: 35 });
       return json({ ok: true });
     }
 
     // ── GET /sessions ────────────────────────────────────────────
     if (request.method === 'GET' && path === '/sessions') {
-      const list = await env.ANALYTICS.list({ prefix: 'session:' });
+      const list = await env.FPANALYTICS.list({ prefix: 'session:' });
       return json({ count: list.keys.length });
     }
 

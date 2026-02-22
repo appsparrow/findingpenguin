@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Voxel Polar Bear and Seal</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #e0f7fa; /* Light ice-blue background */
+            font-family: sans-serif;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: #333;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="info">
+        <h2>Voxel Polar Bear & Seal</h2>
+        <p>Click and drag to rotate. Scroll to zoom.</p>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. SCENE SETUP
+        const scene = new THREE.Scene();
+        // Add a subtle fog to blend into the background
+        scene.fog = new THREE.FogExp2(0xe0f7fa, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 5, 12);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // Enable shadows
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 1.5, 0);
+
+        // 2. LIGHTING
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // A simple floor to ground the characters
+        const floorGeo = new THREE.PlaneGeometry(20, 20);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // 3. CREATE POLAR BEAR (Waving)
+        function createPolarBear() {
+            const bearGroup = new THREE.Group();
+            const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+            const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+
+            // Body
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.2, 1.2), whiteMat);
+            body.position.set(0, 1.6, 0);
+            body.castShadow = true;
+            bearGroup.add(body);
+
+            // Head
+            const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), whiteMat);
+            head.position.set(0, 3.1, 0.2);
+            head.castShadow = true;
+            bearGroup.add(head);
+
+            // Snout
+            const snout = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.4, 0.4), whiteMat);
+            snout.position.set(0, 2.9, 0.9);
+            bearGroup.add(snout);
+
+            // Nose
+            const nose = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.1), blackMat);
+            nose.position.set(0, 3.05, 1.1);
+            bearGroup.add(nose);
+
+            // Eyes
+            const eyeGeo = new THREE.BoxGeometry(0.15, 0.15, 0.1);
+            const eyeL = new THREE.Mesh(eyeGeo, blackMat);
+            eyeL.position.set(-0.3, 3.3, 0.8);
+            const eyeR = new THREE.Mesh(eyeGeo, blackMat);
+            eyeR.position.set(0.3, 3.3, 0.8);
+            bearGroup.add(eyeL, eyeR);
+
+            // Ears
+            const earGeo = new THREE.BoxGeometry(0.25, 0.25, 0.2);
+            const earL = new THREE.Mesh(earGeo, whiteMat);
+            earL.position.set(-0.5, 3.7, 0);
+            const earR = new THREE.Mesh(earGeo, whiteMat);
+            earR.position.set(0.5, 3.7, 0);
+            bearGroup.add(earL, earR);
+
+            // Left Arm (Resting)
+            const armL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.5, 0.5), whiteMat);
+            armL.position.set(-1.05, 1.8, 0);
+            armL.castShadow = true;
+            bearGroup.add(armL);
+
+            // Right Arm (Waving)
+            const armR = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.5, 0.5), whiteMat);
+            // Translate up and rotate to simulate a wave
+            armR.position.set(1, 2.7, 0);
+            armR.rotation.z = Math.PI / 90; // 45 degrees
+            armR.castShadow = true;
+            bearGroup.add(armR);
+
+            // Legs
+            const legGeo = new THREE.BoxGeometry(0.6, 0.8, 0.6);
+            const legL = new THREE.Mesh(legGeo, whiteMat);
+            legL.position.set(-0.4, 0.4, 0.1);
+            legL.castShadow = true;
+            const legR = new THREE.Mesh(legGeo, whiteMat);
+            legR.position.set(0.4, 0.4, 0.1);
+            legR.castShadow = true;
+            bearGroup.add(legL, legR);
+
+            return bearGroup;
+        }
+
+        // 4. CREATE SEAL
+        function createSeal() {
+            const sealGroup = new THREE.Group();
+            // Using a nice warm brown color
+            const brownMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.8 });
+            const darkBrownMat = new THREE.MeshStandardMaterial({ color: 0x4a3018, roughness: 0.9 });
+            const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+            const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 });
+
+            // Main Body (lying down)
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 2.2), brownMat);
+            body.position.set(0, 0.5, 0);
+            body.castShadow = true;
+            sealGroup.add(body);
+
+            // Head (elevated slightly at the front)
+            const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 1.2), brownMat);
+            head.position.set(0, 1.0, 1.4);
+            head.castShadow = true;
+            sealGroup.add(head);
+
+            // Snout
+            const snout = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 0.5), darkBrownMat);
+            snout.position.set(0, 0.8, 2.1);
+            sealGroup.add(snout);
+
+            // Nose
+            const nose = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.15, 0.1), blackMat);
+            nose.position.set(0, 0.95, 2.35);
+            sealGroup.add(nose);
+
+            // Eyes (White with black pupils for that cute look)
+            const eyeWhiteGeo = new THREE.BoxGeometry(0.2, 0.2, 0.1);
+            const eyeBlackGeo = new THREE.BoxGeometry(0.1, 0.1, 0.11);
+            
+            const eyeL = new THREE.Group();
+            eyeL.add(new THREE.Mesh(eyeWhiteGeo, whiteMat));
+            const pupilL = new THREE.Mesh(eyeBlackGeo, blackMat);
+            pupilL.position.x = 0.05; // look slightly inward
+            eyeL.add(pupilL);
+            eyeL.position.set(-0.4, 1.2, 2.0);
+            
+            const eyeR = new THREE.Group();
+            eyeR.add(new THREE.Mesh(eyeWhiteGeo, whiteMat));
+            const pupilR = new THREE.Mesh(eyeBlackGeo, blackMat);
+            pupilR.position.x = -0.05;
+            eyeR.add(pupilR);
+            eyeR.position.set(0.4, 1.2, 2.0);
+
+            sealGroup.add(eyeL, eyeR);
+
+            // Front Flippers
+            const flipperGeo = new THREE.BoxGeometry(1.2, 0.2, 0.8);
+            const flipperL = new THREE.Mesh(flipperGeo, brownMat);
+            flipperL.position.set(-1.2, 0.1, 1.0);
+            flipperL.rotation.z = -Math.PI / 8; // Slant into the floor
+            
+            const flipperR = new THREE.Mesh(flipperGeo, brownMat);
+            flipperR.position.set(1.2, 0.1, 1.0);
+            flipperR.rotation.z = Math.PI / 8;
+
+            sealGroup.add(flipperL, flipperR);
+
+            // Tail Flippers
+            const tailGeo = new THREE.BoxGeometry(0.6, 0.2, 1.0);
+            const tailL = new THREE.Mesh(tailGeo, brownMat);
+            tailL.position.set(-0.35, 0.1, -1.5);
+            tailL.rotation.y = -Math.PI / 6; // Splay outward
+            
+            const tailR = new THREE.Mesh(tailGeo, brownMat);
+            tailR.position.set(0.35, 0.1, -1.5);
+            tailR.rotation.y = Math.PI / 6;
+
+            sealGroup.add(tailL, tailR);
+
+            return sealGroup;
+        }
+
+        // Add characters to scene
+        const polarBear = createPolarBear();
+        polarBear.position.set(-2, 0, 0);
+        scene.add(polarBear);
+
+        const seal = createSeal();
+        seal.position.set(2, 0, 0);
+        // Rotate the seal so it faces slightly toward the camera
+        seal.rotation.y = -Math.PI / 6; 
+        scene.add(seal);
+
+        // 5. ANIMATION LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
