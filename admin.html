@@ -186,9 +186,49 @@ body{background:linear-gradient(135deg,#0d1f45 0%,#1a3a6a 100%);min-height:100vh
         <div class="map-legend" id="map-legend"></div>
       </div>
 
+      <!-- Game Stats -->
+      <div class="card" style="margin-top:16px;" id="stats-card">
+        <div class="card-title">📊 Game Stats</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+          <div style="background:rgba(60,100,180,.25);border:1px solid rgba(80,140,255,.25);border-radius:12px;padding:12px;text-align:center;">
+            <div style="font-size:24px;font-weight:bold;color:#90c8ff;" id="stat-visits">–</div>
+            <div style="font-size:10px;color:#5a80bb;letter-spacing:1px;margin-top:2px;">👣 TOTAL VISITS</div>
+          </div>
+          <div style="background:rgba(60,100,180,.25);border:1px solid rgba(80,140,255,.25);border-radius:12px;padding:12px;text-align:center;">
+            <div style="font-size:24px;font-weight:bold;color:#90ffcc;" id="stat-online">–</div>
+            <div style="font-size:10px;color:#5a80bb;letter-spacing:1px;margin-top:2px;">🐧 ONLINE NOW</div>
+          </div>
+        </div>
+        <button class="btn-save" onclick="refreshStats()" style="padding:8px;font-size:11px;margin-top:4px;">🔄 Refresh</button>
+      </div>
+
       <!-- World Settings -->
       <div class="card" style="margin-top:16px;">
         <div class="card-title">World Settings</div>
+
+        <label class="field-label">🎯 Difficulty — How hard to find Waddler
+          <span style="font-size:11px;color:#4a7acc;font-weight:normal;letter-spacing:0;text-transform:none"> — higher = spawns farther away</span>
+        </label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+          <span style="font-size:12px;color:#5a80bb;">Easy</span>
+          <input type="range" id="s-difficulty" min="1" max="5" step="1" value="4"
+            style="flex:1;accent-color:#ff7744;" oninput="updateDiffLabel(this.value)">
+          <span style="font-size:12px;color:#5a80bb;">Hard</span>
+          <span id="s-diff-val" style="font-size:14px;color:#ff9966;min-width:18px;text-align:center;">4</span>
+        </div>
+        <div id="s-diff-desc" style="font-size:11px;color:#6a90cc;margin-bottom:14px;letter-spacing:.4px;">Hard — Waddler spawns ~78% across the world</div>
+
+        <label class="field-label">🌍 World Size
+          <span style="font-size:11px;color:#4a7acc;font-weight:normal;letter-spacing:0;text-transform:none"> — radius of the snowfield</span>
+        </label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="font-size:12px;color:#5a80bb;">Small</span>
+          <input type="range" id="s-worldsize" min="400" max="1400" step="100" value="700"
+            style="flex:1;accent-color:#44aaff;" oninput="document.getElementById('s-wsize-val').textContent=this.value">
+          <span style="font-size:12px;color:#5a80bb;">Large</span>
+          <span id="s-wsize-val" style="font-size:14px;color:#90c8ff;min-width:40px;text-align:center;">700</span>
+        </div>
+
         <label class="field-label">Terrain Density
           <span style="font-size:11px;color:#4a7acc;font-weight:normal;letter-spacing:0;text-transform:none"> — higher = fewer objects</span>
         </label>
@@ -199,10 +239,11 @@ body{background:linear-gradient(135deg,#0d1f45 0%,#1a3a6a 100%);min-height:100vh
           <span style="font-size:12px;color:#5a80bb;">Sparse</span>
           <span id="s-density-val" style="font-size:14px;color:#90c8ff;min-width:18px;text-align:center;">4</span>
         </div>
+
         <label class="field-label">Analytics Worker URL</label>
         <input class="field-inp" id="s-worker-url" placeholder="https://finding-penguin-worker.YOUR-ACCOUNT.workers.dev" style="margin-bottom:14px;">
         <button class="btn-save" onclick="saveSettings()" style="padding:12px;">💾 &nbsp;Save Settings</button>
-        <p style="font-size:11px;color:#4a6a9a;margin-top:10px;letter-spacing:.5px;">Terrain density applies on next game reload.</p>
+        <p style="font-size:11px;color:#4a6a9a;margin-top:10px;letter-spacing:.5px;">All settings apply on next game reload.</p>
       </div>
     </div>
 
@@ -241,37 +282,62 @@ const TYPE_META = {
   stall:   {label:'Stall',   color:'#cc44aa'},
   land:    {label:'Landmark',color:'#8888cc'},
   seal:    {label:'Seal',    color:'#44aacc'},
-  sealion: {label:'Sea Lion',color:'#2299bb'},
+  polarbear:{label:'Polar Bear',color:'#aaccee'},
 };
 
 const SETTINGS_KEY = 'fp_settings';
 let _clickStats = {};
 
+const DIFF_LABELS=['','Easy — Waddler nearby (~40% across)','Medium-easy (~52%)','Medium — Waddler at ~65% of world','Hard — Waddler at ~78% of world','Very Hard — near the far edge (~90%)'];
+function updateDiffLabel(v){
+  document.getElementById('s-diff-val').textContent=v;
+  document.getElementById('s-diff-desc').textContent=DIFF_LABELS[v]||'';
+}
 function loadSettings(){
   try{const d=localStorage.getItem(SETTINGS_KEY);if(d)return JSON.parse(d);}catch(e){}
-  return {terrainDensity:4,workerUrl:''};
+  return {terrainDensity:4,worldSize:700,difficulty:4,workerUrl:'https://finding-penguin-worker.domain-sparrow.workers.dev'};
 }
 function saveSettings(){
   const s={
     terrainDensity:parseInt(document.getElementById('s-density').value)||4,
+    worldSize:parseInt(document.getElementById('s-worldsize').value)||700,
+    difficulty:parseInt(document.getElementById('s-difficulty').value)||4,
     workerUrl:document.getElementById('s-worker-url').value.trim(),
   };
   localStorage.setItem(SETTINGS_KEY,JSON.stringify(s));
-  notify('✅ Settings saved');
+  notify('✅ Settings saved — reload the game to apply');
 }
 function initSettings(){
   const s=loadSettings();
   document.getElementById('s-density').value=s.terrainDensity||4;
   document.getElementById('s-density-val').textContent=s.terrainDensity||4;
+  document.getElementById('s-worldsize').value=s.worldSize||700;
+  document.getElementById('s-wsize-val').textContent=s.worldSize||700;
+  const diff=s.difficulty||4;
+  document.getElementById('s-difficulty').value=diff;
+  updateDiffLabel(diff);
   document.getElementById('s-worker-url').value=s.workerUrl||'';
 }
 async function fetchStats(){
-  const url=(loadSettings().workerUrl||'').trim();
+  const url=(loadSettings().workerUrl||'https://finding-penguin-worker.domain-sparrow.workers.dev').trim();
   if(!url)return;
   try{
     const r=await fetch(url+'/stats');
     if(r.ok){_clickStats=await r.json();renderList();}
   }catch(e){}
+}
+async function refreshStats(){
+  const url=(loadSettings().workerUrl||'https://finding-penguin-worker.domain-sparrow.workers.dev').trim();
+  // Local visit count
+  try{const v=parseInt(localStorage.getItem('fp_visits')||'0');document.getElementById('stat-visits').textContent=v.toLocaleString();}catch(e){}
+  // Online count from worker
+  if(!url)return;
+  try{
+    const r=await fetch(url+'/sessions');
+    if(r.ok){const d=await r.json();document.getElementById('stat-online').textContent=d.count??'–';}
+  }catch(e){document.getElementById('stat-online').textContent='–';}
+  // Also refresh click stats
+  fetchStats();
 }
 
 let selectedType = 'person';
@@ -284,7 +350,8 @@ function doLogin(){
     document.getElementById('panel').style.display='block';
     initSettings();
     render();
-    fetchStats(); // async, updates click counts when done
+    fetchStats();    // async, updates click counts when done
+    refreshStats();  // async, updates game stats panel
   } else {
     document.getElementById('pw-err').textContent='Incorrect password.';
     document.getElementById('pw').value='';

@@ -57,7 +57,8 @@ canvas{display:block;}
 .dark-btn:hover{background:#2a5aaa;}
 
 /* VISIT COUNTER */
-#visit-badge{position:fixed;bottom:52px;left:12px;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.3);border-radius:16px;padding:4px 12px;color:rgba(255,255,255,.85);font-size:10px;letter-spacing:1.5px;pointer-events:none;z-index:10;}
+#visit-badge{position:fixed;bottom:52px;left:12px;background:rgba(20,40,80,.72);backdrop-filter:blur(10px);border:1px solid rgba(100,160,255,.35);border-radius:16px;padding:5px 13px;color:#c8e4ff;font-size:10px;letter-spacing:1.5px;pointer-events:none;z-index:10;text-shadow:0 1px 4px rgba(0,0,80,.6);}
+#intro-stats{margin-top:14px;color:rgba(140,200,255,.8);font-size:10px;letter-spacing:1.5px;}
 
 /* INTRO BUTTON PULSE */
 @keyframes btnpulse{0%,100%{box-shadow:0 4px 20px rgba(80,140,255,.2);}50%{box-shadow:0 4px 32px rgba(80,180,255,.55),0 0 0 4px rgba(100,180,255,.2);}}
@@ -150,7 +151,7 @@ canvas{display:block;}
   </div>
 </div>
 <div id="action-hint">J·jump &nbsp;·&nbsp; C·spin &nbsp;·&nbsp; H·wave &nbsp;·&nbsp; B·bow</div>
-<div id="visit-badge">👣 <span id="visit-count">0</span> visits &nbsp;·&nbsp; 🐧 <span id="online-count">–</span> online</div>
+<div id="visit-badge" title="Your visits · Players online now">👣 <span id="visit-count">…</span> &nbsp;·&nbsp; 🐧 <span id="online-count">…</span></div>
 
 <!-- INTRO -->
 <div class="fullscreen" id="intro-screen">
@@ -169,6 +170,7 @@ canvas{display:block;}
     </div>
     <button class="glassy-btn" onclick="startGame()">▶ &nbsp;BEGIN THE SEARCH</button>
     <div style="color:rgba(100,180,255,.8);font-size:10px;letter-spacing:2px;margin-top:10px;text-align:center;">↑ click anytime to begin</div>
+    <div id="intro-stats">👣 <span id="intro-visit-count">…</span> adventures &nbsp;·&nbsp; 🐧 <span id="intro-online-count">…</span> exploring now</div>
   </div>
 </div>
 
@@ -295,8 +297,9 @@ canvas{display:block;}
     const k='fp_visits';
     const n=(parseInt(localStorage.getItem(k)||'0')+1);
     localStorage.setItem(k,String(n));
-    const el=document.getElementById('visit-count');
-    if(el)el.textContent=n.toLocaleString();
+    const s=n.toLocaleString();
+    const el=document.getElementById('visit-count');if(el)el.textContent=s;
+    const el2=document.getElementById('intro-visit-count');if(el2)el2.textContent=s;
   }catch(e){}
 })();
 
@@ -312,8 +315,11 @@ canvas{display:block;}
   function fetchOnline(){
     const u=workerUrl();if(!u)return;
     fetch(u+'/sessions').then(r=>r.json()).then(d=>{
-      const el=document.getElementById('online-count');
-      if(el&&typeof d.count==='number')el.textContent=d.count;
+      if(typeof d.count==='number'){
+        const c=d.count;
+        const el=document.getElementById('online-count');if(el)el.textContent=c;
+        const el2=document.getElementById('intro-online-count');if(el2)el2.textContent=c;
+      }
     }).catch(()=>{});
   }
   // Ping immediately + every 15s; fetch count every 20s
@@ -818,9 +824,14 @@ function spawnAll(){
   const wch=waddlerGroup.children;
   wWL=wch[8];wWR=wch[9];wFL=wch[10];wFR=wch[11];
 
-  const maxD=WRAD*.82;                               // 574 units (edge of safe area)
-  const minD=Math.min(380+round*30,maxD*.9);         // round 1: 380, grows 30/round, cap 516
-  const ang=Math.random()*Math.PI*2,d=Math.min(minD+Math.random()*120,maxD); // 380–500 round 1
+  const _st=loadSettings();
+  const _diff=Math.max(1,Math.min(5,_st.difficulty||3));  // 1=easy,3=medium,5=hard
+  const _wrad=Math.max(400,Math.min(1400,_st.worldSize||WRAD));
+  const maxD=_wrad*.82;
+  // difficulty controls how far Waddler spawns: easy=40%, hard=90% of world radius
+  const _frac=0.40+(_diff-1)*0.125;                   // 1→40%, 3→65%, 5→90%
+  const minD=Math.min(_wrad*_frac+round*20,maxD*.95);
+  const ang=Math.random()*Math.PI*2,d=Math.min(minD+Math.random()*(_wrad*.1),maxD);
   wPos.set(Math.cos(ang)*d,0,Math.sin(ang)*d);
   wYaw=0;wVX=0;wVZ=0;wTimer=0;wAnimT=0;wStep=0;
   waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
@@ -912,11 +923,12 @@ function hideWaddlerMsg(){
 }
 
 // ── Reunion sequence ──────────────────────────────────────────
-let reunionPhase=null,reunionT=0;
+let reunionPhase=null,reunionT=0,_reunionQueued=false,_reunionTimer=null;
 const EL_reunionHearts=document.getElementById('reunion-hearts');
 
 function startReunion(){
   if(reunionPhase)return;
+  _reunionQueued=false;_reunionTimer=null;
   reunionPhase='approach';reunionT=0;
   hideWaddlerMsg();
   // stop Waddler wandering
@@ -1002,37 +1014,35 @@ function renderPortrait(){
   // Ensure wings are fully spread for the portrait
   if(lWL)lWL.rotation.z=-1.2; if(lWR)lWR.rotation.z=1.2;
   if(wWL)wWL.rotation.z=-1.2; if(wWR)wWR.rotation.z=1.2;
-  // Render at 512×512
+  // Render at 512×512 — force pixelRatio=1 so drawImage copies exactly 512×512 pixels
+  const savedPR=renderer.getPixelRatio();
+  renderer.setPixelRatio(1);
   renderer.setSize(512,512,false);
   renderer.render(scene,portCam);
-  // Restore rotations
-  lailaGroup.rotation.y=savedLRot; waddlerGroup.rotation.y=savedWRot;
-  // Copy pixels to portrait canvas
+  // Copy pixels to portrait canvas BEFORE restoring renderer size
   pc.width=512;pc.height=512;
   const ctx=pc.getContext('2d');
   ctx.drawImage(renderer.domElement,0,0,512,512);
+  // ── Restore renderer immediately after pixel copy ──────────────
+  renderer.setPixelRatio(savedPR);
+  renderer.setSize(window.innerWidth,window.innerHeight,false);
+  // Restore rotations
+  lailaGroup.rotation.y=savedLRot; waddlerGroup.rotation.y=savedWRot;
+  // Restore Waddler to its actual position
+  waddlerGroup.position.set(savedWx,terrainH(savedWx,savedWz)-0.12*PS,savedWz);
   // ── Text overlay ──────────────────────────────────────────────
-  // Dark band at bottom
   ctx.fillStyle='rgba(0,0,0,0.40)';
   ctx.fillRect(0,358,512,154);
   ctx.textAlign='center';
-  // "Laila & Waddler" in pink
   ctx.fillStyle='#ff77cc';
   ctx.font='bold 30px Courier New';
   ctx.fillText('Laila & Waddler',256,403);
-  // "Happily Ever After" in white
   ctx.fillStyle='#ffffff';
   ctx.font='bold 24px Courier New';
   ctx.fillText('Happily Ever After \u2728',256,445);
-  // Two hearts floating above penguins
   ctx.font='36px serif';
   ctx.fillText('\uD83D\uDC99',185,115);  // 💙
   ctx.fillText('\uD83D\uDC97',315,88);   // 💗
-  // ── Restore ───────────────────────────────────────────────────
-  renderer.setSize(window.innerWidth,window.innerHeight,false);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
-  // Restore Waddler to its actual position (wPos not changed)
-  waddlerGroup.position.set(savedWx,terrainH(savedWx,savedWz)-0.12*PS,savedWz);
 }
 
 function sharePortrait(){
@@ -1159,7 +1169,7 @@ function loadPOIs(){
 // ── Settings (terrain density, worker URL) ───────────────────
 function loadSettings(){
   try{const d=localStorage.getItem('fp_settings');if(d)return JSON.parse(d);}catch(e){}
-  return {terrainDensity:4,workerUrl:'https://finding-penguin-worker.domain-sparrow.workers.dev'};
+  return {terrainDensity:4,worldSize:700,difficulty:4,workerUrl:'https://finding-penguin-worker.domain-sparrow.workers.dev'};
 }
 
 // ── Analytics click tracking ─────────────────────────────────
@@ -1315,9 +1325,11 @@ function updateHUD(){
   const ctxt=d<12?'💙':ARR[Math.round(rel/(Math.PI/4))%8];
   if(ctxt!==_lastCompass){EL_compass.textContent=ctxt;_lastCompass=ctxt;}
   sPing(Math.max(0,1-d/600));
-  // Waddler speech bubble when nearby
-  if(d<12&&!reunionPhase){showWaddlerMsg();startReunion();}
-  else if(d>=12||reunionPhase){hideWaddlerMsg();}
+  // Waddler speech bubble when nearby — show first, then trigger reunion after 1.8s
+  if(d<12&&!reunionPhase){
+    showWaddlerMsg();
+    if(!_reunionQueued){_reunionQueued=true;_reunionTimer=setTimeout(()=>{startReunion();},1800);}
+  } else if(d>=12&&!reunionPhase){hideWaddlerMsg();_reunionQueued=false;}
 
   // POI proximity
   let cl=null,cd=30;
@@ -1412,7 +1424,8 @@ function foundPenguin(){
 }
 function nextRound(){
   round++;
-  reunionPhase=null;reunionT=0;
+  reunionPhase=null;reunionT=0;_reunionQueued=false;
+  if(_reunionTimer){clearTimeout(_reunionTimer);_reunionTimer=null;}
   // Reset wing poses for next round
   if(lWL)lWL.rotation.z=0;if(lWR)lWR.rotation.z=0;
   if(wWL)wWL.rotation.z=0;if(wWR)wWR.rotation.z=0;
