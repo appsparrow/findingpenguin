@@ -150,7 +150,7 @@ canvas{display:block;}
   </div>
 </div>
 <div id="action-hint">J·jump &nbsp;·&nbsp; C·spin &nbsp;·&nbsp; H·wave &nbsp;·&nbsp; B·bow</div>
-<div id="visit-badge">👣 <span id="visit-count">0</span> visits</div>
+<div id="visit-badge">👣 <span id="visit-count">0</span> visits &nbsp;·&nbsp; 🐧 <span id="online-count">–</span> online</div>
 
 <!-- INTRO -->
 <div class="fullscreen" id="intro-screen">
@@ -300,6 +300,27 @@ canvas{display:block;}
   }catch(e){}
 })();
 
+// ── Online presence (Cloudflare Worker) ──────────────────────
+(function(){
+  const sid='fp_'+Math.random().toString(36).slice(2,10);
+  function workerUrl(){try{const d=localStorage.getItem('fp_settings');if(d){const s=JSON.parse(d);if(s.workerUrl)return s.workerUrl.trim();}}catch(e){}return '';}
+  function pingSession(){
+    const u=workerUrl();if(!u)return;
+    fetch(u+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sid})}).catch(()=>{});
+  }
+  function fetchOnline(){
+    const u=workerUrl();if(!u)return;
+    fetch(u+'/sessions').then(r=>r.json()).then(d=>{
+      const el=document.getElementById('online-count');
+      if(el&&typeof d.count==='number')el.textContent=d.count;
+    }).catch(()=>{});
+  }
+  // Ping immediately + every 15s; fetch count every 20s
+  pingSession();fetchOnline();
+  setInterval(pingSession,15000);
+  setInterval(fetchOnline,20000);
+})();
+
 // ════════════════════════════════════════════
 // INTRO 2D ANIMATION
 // ════════════════════════════════════════════
@@ -385,7 +406,7 @@ function sPing(r){const now=Date.now(),iv=Math.max(140,3000-r*2900);if(now-pingL
 // THREE.JS GAME
 // ════════════════════════════════════════════
 let scene,camera,renderer,gameRunning=false,round=1;
-const WRAD=1400,BSIZ=4;
+const WRAD=700,BSIZ=4;
 
 function terrainH(px,pz){
   return Math.sin(px*.012)*4+Math.cos(pz*.010)*3.5+Math.sin(px*.025+pz*.02)*1.8+Math.sin(px*.006-pz*.007)*6;
@@ -798,8 +819,9 @@ function spawnAll(){
   const wch=waddlerGroup.children;
   wWL=wch[8];wWR=wch[9];wFL=wch[10];wFR=wch[11];
 
-  const minD=Math.min(500+round*80,WRAD*.82);
-  const ang=Math.random()*Math.PI*2,d=minD+Math.random()*200;
+  const maxD=WRAD*.82;
+  const minD=Math.min(250+round*40,maxD*.85);
+  const ang=Math.random()*Math.PI*2,d=Math.min(minD+Math.random()*100,maxD);
   wPos.set(Math.cos(ang)*d,0,Math.sin(ang)*d);
   wYaw=0;wVX=0;wVZ=0;wTimer=0;wAnimT=0;wStep=0;
   waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);

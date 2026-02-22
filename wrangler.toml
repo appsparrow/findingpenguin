@@ -1,0 +1,7 @@
+name = "finding-penguin-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "FPANALYTICS"
+id = "de6edfc81c684b80a6e47fcb2775592b"
