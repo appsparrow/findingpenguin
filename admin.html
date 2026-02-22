@@ -328,10 +328,13 @@ async function fetchStats(){
 }
 async function refreshStats(){
   const url=(loadSettings().workerUrl||'https://finding-penguin-worker.domain-sparrow.workers.dev').trim();
-  // Local visit count
-  try{const v=parseInt(localStorage.getItem('fp_visits')||'0');document.getElementById('stat-visits').textContent=v.toLocaleString();}catch(e){}
-  // Online count from worker
   if(!url)return;
+  // Server-side total visit count
+  try{
+    const r=await fetch(url+'/visits');
+    if(r.ok){const d=await r.json();document.getElementById('stat-visits').textContent=(d.count??0).toLocaleString();}
+  }catch(e){document.getElementById('stat-visits').textContent='–';}
+  // Online count from worker
   try{
     const r=await fetch(url+'/sessions');
     if(r.ok){const d=await r.json();document.getElementById('stat-online').textContent=d.count??'–';}

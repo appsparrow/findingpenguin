@@ -15,6 +15,8 @@
  *    npx wrangler deploy
  *
  * ── ENDPOINTS ────────────────────────────────────────────────────────────────
+ * POST /visit                    — increment global page visit counter, return new total
+ * GET  /visits                   — return {count: N} total visits ever
  * POST /click?id=poi_xxx         — increment click count for a POI
  * GET  /stats                    — return {poi_id: count, ...} for all POIs
  * POST /session                  — register an active player (TTL 30s)
@@ -45,6 +47,21 @@ export default {
     // Preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
+    }
+
+    // ── POST /visit ─────────────────────────────────────────────
+    // Increment global page visit counter; returns new total.
+    if (request.method === 'POST' && path === '/visit') {
+      const current = parseInt(await env.FPANALYTICS.get('global:visits') || '0');
+      const next = current + 1;
+      await env.FPANALYTICS.put('global:visits', String(next));
+      return json({ ok: true, count: next });
+    }
+
+    // ── GET /visits ──────────────────────────────────────────────
+    if (request.method === 'GET' && path === '/visits') {
+      const count = parseInt(await env.FPANALYTICS.get('global:visits') || '0');
+      return json({ count });
     }
 
     // ── POST /click?id=poi_xxx ──────────────────────────────────

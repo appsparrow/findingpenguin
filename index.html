@@ -290,17 +290,25 @@ canvas{display:block;}
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script>
 // ════════════════════════════════════════════
-// VISIT COUNTER
+// VISIT COUNTER (server-side via Cloudflare Worker)
 // ════════════════════════════════════════════
 (function(){
-  try{
-    const k='fp_visits';
-    const n=(parseInt(localStorage.getItem(k)||'0')+1);
-    localStorage.setItem(k,String(n));
+  const DEFAULT_WORKER='https://finding-penguin-worker.domain-sparrow.workers.dev';
+  function workerUrlV(){try{const d=localStorage.getItem('fp_settings');if(d){const s=JSON.parse(d);if(s.workerUrl)return s.workerUrl.trim();}}catch(e){}return DEFAULT_WORKER;}
+  function setVisitCount(n){
     const s=n.toLocaleString();
     const el=document.getElementById('visit-count');if(el)el.textContent=s;
     const el2=document.getElementById('intro-visit-count');if(el2)el2.textContent=s;
-  }catch(e){}
+  }
+  const u=workerUrlV();
+  if(u){
+    fetch(u+'/visit',{method:'POST'}).then(r=>r.json()).then(d=>{
+      if(typeof d.count==='number')setVisitCount(d.count);
+    }).catch(()=>{
+      // Fallback to localStorage if worker unreachable
+      try{const k='fp_visits';const n=(parseInt(localStorage.getItem(k)||'0')+1);localStorage.setItem(k,String(n));setVisitCount(n);}catch(e){}
+    });
+  }
 })();
 
 // ── Online presence (Cloudflare Worker) ──────────────────────
