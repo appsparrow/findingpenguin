@@ -3,7 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Finding Penguin 🐧</title>
+<title>Finding Penguin 🐧 — A Love Story in the Snow</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="description" content="Finding Penguin — a charming 3D adventure game where Laila searches the endless snowfields to reunite with her lost penguin Waddler. Walk, explore, and find true love in the snow!">
+<meta name="keywords" content="finding penguin, penguin game, cute game, adventure game, 3D browser game, HTML5 game, snow game, love story game, casual game, free online game, CrazyGames, puzzle game, family game">
+<meta property="og:title" content="Finding Penguin 🐧 — A Love Story in the Snow">
+<meta property="og:description" content="Help Laila find Waddler across the endless snowfields in this charming 3D adventure. Free to play in your browser!">
+<meta property="og:image" content="logo.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Finding Penguin 🐧">
+<meta name="twitter:description" content="A charming 3D penguin love story. Find Waddler in the snow!">
+<meta name="theme-color" content="#7aa8d8">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#b8d8f0;overflow:hidden;font-family:'Courier New',monospace;user-select:none;-webkit-user-select:none;}
@@ -44,6 +56,13 @@ canvas{display:block;}
 .dark-btn{background:#1a3a6a;color:#fff;border:none;font-family:'Courier New',monospace;font-size:12px;letter-spacing:3px;padding:12px 36px;cursor:pointer;border-radius:4px;text-transform:uppercase;transition:background .2s;}
 .dark-btn:hover{background:#2a5aaa;}
 
+/* VISIT COUNTER */
+#visit-badge{position:fixed;bottom:52px;left:12px;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.3);border-radius:16px;padding:4px 12px;color:rgba(255,255,255,.85);font-size:10px;letter-spacing:1.5px;pointer-events:none;z-index:10;}
+
+/* INTRO BUTTON PULSE */
+@keyframes btnpulse{0%,100%{box-shadow:0 4px 20px rgba(80,140,255,.2);}50%{box-shadow:0 4px 32px rgba(80,180,255,.55),0 0 0 4px rgba(100,180,255,.2);}}
+.glassy-btn{animation:btnpulse 2s ease-in-out infinite;}
+
 /* MAP OVERLAY */
 #map-ov{position:fixed;inset:0;background:rgba(6,14,38,.92);display:none;align-items:center;justify-content:center;z-index:60;backdrop-filter:blur(6px);}
 #map-box{background:rgba(210,230,255,.97);border:2px solid rgba(100,160,255,.45);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:96vw;max-height:96vh;overflow-y:auto;}
@@ -80,6 +99,19 @@ canvas{display:block;}
 .pt-url{color:#3a7aff;font-size:11px;text-decoration:none;cursor:pointer;pointer-events:all;display:none;letter-spacing:.5px;}
 .pt-url:hover{text-decoration:underline;}
 
+/* WADDLER SPEECH BUBBLE */
+#waddler-msg{position:fixed;display:none;z-index:42;pointer-events:none;animation:wbob .8s ease-in-out infinite alternate;}
+.waddler-bubble{background:rgba(255,240,255,.97);border:2.5px solid rgba(255,120,200,.6);border-radius:20px;padding:12px 20px;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(255,80,180,.22);text-align:center;white-space:nowrap;position:relative;}
+.waddler-bubble::after{content:'';position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:rgba(255,240,255,.97);}
+.waddler-bubble::before{content:'';position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:rgba(255,120,200,.6);}
+.wb-text{color:#880044;font-size:14px;font-weight:bold;letter-spacing:.5px;}
+@keyframes wbob{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+
+/* REUNION HEARTS */
+#reunion-hearts{position:fixed;inset:0;pointer-events:none;z-index:48;display:none;}
+.heart-bubble{position:absolute;font-size:28px;animation:heartFloat 2.2s ease-out forwards;}
+@keyframes heartFloat{0%{opacity:1;transform:translateY(0) scale(1)}70%{opacity:.8;transform:translateY(-80px) scale(1.3)}100%{opacity:0;transform:translateY(-140px) scale(.7)}}
+
 /* ADMIN LOGIN */
 #admin-login{position:fixed;inset:0;background:rgba(6,14,38,.88);display:none;align-items:center;justify-content:center;z-index:80;backdrop-filter:blur(8px);}
 #al-box{background:#fff;border-radius:14px;padding:32px;width:300px;display:flex;flex-direction:column;gap:12px;text-align:center;}
@@ -109,8 +141,7 @@ canvas{display:block;}
 <div id="hud">
   <div id="peng-btn" title="Double-click for map">🐧</div>
   <div id="hud-center">
-    <div id="gtitle">FINDING PENGUIN</div>
-    <div id="gsubtitle">a love story in the snow</div>
+    <img src="logo.png" id="hud-logo" alt="Finding Penguin" style="height:36px;max-height:36px;filter:drop-shadow(0 2px 8px rgba(60,120,220,.5));display:block;">
   </div>
   <div id="hud-right">
     <div id="warmth">❄️ Searching...</div>
@@ -118,6 +149,7 @@ canvas{display:block;}
   </div>
 </div>
 <div id="action-hint">J·jump &nbsp;·&nbsp; C·spin &nbsp;·&nbsp; H·wave &nbsp;·&nbsp; B·bow</div>
+<div id="visit-badge">👣 <span id="visit-count">0</span> visits</div>
 
 <!-- INTRO -->
 <div class="fullscreen" id="intro-screen">
@@ -135,15 +167,19 @@ canvas{display:block;}
       </div>
     </div>
     <button class="glassy-btn" onclick="startGame()">▶ &nbsp;BEGIN THE SEARCH</button>
+    <div style="color:rgba(100,180,255,.8);font-size:10px;letter-spacing:2px;margin-top:10px;text-align:center;">↑ click anytime to begin</div>
   </div>
 </div>
 
 <!-- FOUND -->
 <div class="fullscreen" id="found-screen">
-  <div style="font-size:72px;margin-bottom:16px;animation:hb .5s infinite alternate">🐧🐧</div>
-  <h2>REUNITED!</h2>
+  <h2 style="margin-bottom:12px">Selfie time! 📸</h2>
+  <canvas id="portrait-canvas" style="border-radius:16px;box-shadow:0 8px 40px rgba(60,120,220,.4);max-width:min(320px,80vw);max-height:min(320px,45vh);margin-bottom:18px;display:block;"></canvas>
   <p id="found-msg">Laila found Waddler! 💙</p>
-  <button class="dark-btn" onclick="nextRound()">▶ &nbsp;WANDER AGAIN</button>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;">
+    <button class="dark-btn" id="share-btn" onclick="sharePortrait()">📸 &nbsp;Share on Instagram</button>
+    <button class="dark-btn" onclick="nextRound()" style="background:#1a5a2a;">▶ &nbsp;Wander Again</button>
+  </div>
 </div>
 
 <!-- MAP / ADMIN OVERLAY -->
@@ -213,6 +249,16 @@ canvas{display:block;}
   </div>
 </div>
 
+<!-- WADDLER SPEECH BUBBLE -->
+<div id="waddler-msg">
+  <div class="waddler-bubble">
+    <div class="wb-text" id="wb-text">Hey Laila!! You found me!! 💙</div>
+  </div>
+</div>
+
+<!-- REUNION HEARTS OVERLAY -->
+<div id="reunion-hearts"></div>
+
 <!-- ADMIN LOGIN -->
 <div id="admin-login">
   <div id="al-box">
@@ -238,7 +284,21 @@ canvas{display:block;}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script>
+// ════════════════════════════════════════════
+// VISIT COUNTER
+// ════════════════════════════════════════════
+(function(){
+  try{
+    const k='fp_visits';
+    const n=(parseInt(localStorage.getItem(k)||'0')+1);
+    localStorage.setItem(k,String(n));
+    const el=document.getElementById('visit-count');
+    if(el)el.textContent=n.toLocaleString();
+  }catch(e){}
+})();
+
 // ════════════════════════════════════════════
 // INTRO 2D ANIMATION
 // ════════════════════════════════════════════
@@ -291,7 +351,9 @@ function introLoop(){
   IX.font=`italic ${Math.round(Math.max(13,IW*.016))}px Georgia,serif`;
   IX.textAlign='center';
   IX.fillText(IP.alpha>.35?'"Waddler wandered into the endless snowfields..."':'"...and disappeared into the white."',IW/2,IH*.88);
-  IX.globalAlpha=1;drawIP(IX,IP.x,gy,IP.step,IP.alpha,1.5);
+  // Mirror horizontally so penguin faces LEFT (toward viewer, like Waddler in-game)
+  IX.globalAlpha=1;
+  IX.save();IX.translate(IP.x,gy);IX.scale(-1,1);drawIP(IX,0,0,IP.step,IP.alpha,1.5);IX.restore();
   IF++;requestAnimationFrame(introLoop);
 }
 requestAnimationFrame(introLoop);
@@ -376,7 +438,7 @@ function initThree(){
   scene.background=new THREE.Color(0xb0d4f0);
   scene.fog=new THREE.FogExp2(0xc0dcf4,.0007);
   camera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,.5,1400);
-  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('gc'),antialias:false});
+  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('gc'),antialias:false,preserveDrawingBuffer:true});
   renderer.setSize(window.innerWidth,window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
   renderer.shadowMap.enabled=true;
@@ -412,6 +474,14 @@ function buildMats(){
     vDck: new THREE.MeshLambertMaterial({color:0xdd8833}), // skate deck
     vWhl: new THREE.MeshLambertMaterial({color:0x222222}), // skate wheels
     vScf: new THREE.MeshLambertMaterial({color:0xee4488}), // pink scarf
+    vBow: new THREE.MeshLambertMaterial({color:0xff77bb}), // pink bow
+    vBwK:new THREE.MeshLambertMaterial({color:0xff44aa}),  // bow knot (darker)
+    // seal/sealion
+    slBd: new THREE.MeshLambertMaterial({color:0x445566}), // seal body
+    slBl: new THREE.MeshLambertMaterial({color:0xb0c8d8}), // seal belly
+    slEy: new THREE.MeshLambertMaterial({color:0x111122}), // seal eye
+    slEW: new THREE.MeshLambertMaterial({color:0xffffff}), // seal eye white
+    slSn: new THREE.MeshLambertMaterial({color:0xffddcc}), // seal snout
     // building
     bRoof:new THREE.MeshLambertMaterial({color:0xdd4422}),
     bWall:new THREE.MeshLambertMaterial({color:0xffe8cc}),
@@ -446,7 +516,7 @@ function buildWorld(){
   _terrainGroup=new THREE.Group();scene.add(_terrainGroup);
   const seed=Math.random()*9999;
   function rn(x,z,s){const v=Math.sin(x*127.1+z*311.7+s*74.3)*43758;return v-Math.floor(v);}
-  const CSTEP=4,CHK=Math.floor(WRAD/BSIZ/CSTEP); // CSTEP 3→4: fewer objects, still looks full
+  const CSTEP=Math.max(2,Math.min(8,loadSettings().terrainDensity||4)),CHK=Math.floor(WRAD/BSIZ/CSTEP);
   for(let bx=-CHK;bx<CHK;bx++){
     for(let bz=-CHK;bz<CHK;bz++){
       const n=rn(bx,bz,seed),n2=rn(bx,bz,seed+1),n3=rn(bx,bz,seed+2);
@@ -518,6 +588,14 @@ function buildPenguinGroup(scale, variant, refs){
       const w=new THREE.Mesh(new THREE.CylinderGeometry(.16*S,.16*S,.14*S,6),M.vWhl);
       w.rotation.z=Math.PI/2;w.position.set(wx*S,wy*S,wz*S);w.castShadow=true;g.add(w);
     });
+  } else if(variant==='bow'){
+    // Pink bow on top-right of head — left loop, right loop, knot
+    const bl=new THREE.Mesh(new THREE.BoxGeometry(.42*S,.3*S,.12*S),M.vBow);
+    bl.position.set(-.26*S,3.74*S,.05*S);bl.rotation.z=.42;g.add(bl);
+    const br=new THREE.Mesh(new THREE.BoxGeometry(.42*S,.3*S,.12*S),M.vBow);
+    br.position.set(.26*S,3.74*S,.05*S);br.rotation.z=-.42;g.add(br);
+    const bk=new THREE.Mesh(new THREE.BoxGeometry(.18*S,.18*S,.14*S),M.vBwK);
+    bk.position.set(0,3.74*S,.05*S);g.add(bk);
   }
 
   if(refs){refs.wL=wL;refs.wR=wR;refs.fL=fL;refs.fR=fR;refs.head=head;refs.body=body;}
@@ -545,6 +623,9 @@ function makePOIMesh(poi){
   // Clean up old meshes
   if(poi.group){scene.remove(poi.group);poi.group=null;}
 
+  // Hidden POIs are removed from the world entirely
+  if(poi.visible===false)return;
+
   const g=new THREE.Group();
   const gy=terrainH(poi.x,poi.z);
   const S=CS;
@@ -555,7 +636,6 @@ function makePOIMesh(poi){
     const variants=['hat','shades','scarf','skate'];
     const variant=variants[(poi._variantIdx||0)%variants.length];
     buildPenguinGroup(S*1.15, variant, null).children.forEach(c=>{g.add(c);});
-    // slightly face a direction
     g.rotation.y=Math.PI*0.25;
   } else if(type==='shop'){
     makeShop3D(g,S);
@@ -565,8 +645,13 @@ function makePOIMesh(poi){
     makeStall3D(g,S);
   } else if(type==='land'){
     makeLandmark3D(g,S);
+  } else if(type==='seal'){
+    makeSeal3D(g,S);
+    g.rotation.y=Math.PI*0.15;
+  } else if(type==='sealion'){
+    makeSealion3D(g,S);
+    g.rotation.y=-Math.PI*0.2;
   } else {
-    // generic: coloured post with sign board
     makeGenericPost(g,S);
   }
 
@@ -629,6 +714,66 @@ function makeGenericPost(g,S){
   b(1.8,1.8,.12,M.bSign,0,4.0,0); // sign board
 }
 
+function makeSeal3D(g,S){
+  function b(w,h,d,mat,px,py,pz){const m=new THREE.Mesh(new THREE.BoxGeometry(w*S,h*S,d*S),mat);m.position.set(px*S,py*S,pz*S);m.castShadow=true;g.add(m);}
+  // body — long horizontal torpedo shape approximated with boxes
+  b(2.8,1.0,1.4,M.slBd, 0, 0.9, 0);     // main body
+  b(2.0,0.7,1.0,M.slBl, 0, 0.72,0.15);  // belly lighter patch
+  // head
+  b(1.1,1.0,1.0,M.slBd, 1.5, 1.1, 0);  // head (forward)
+  b(0.7,0.4,0.6,M.slSn, 2.1, 0.9, 0);  // snout
+  // eyes
+  b(0.18,0.18,0.1,M.slEW, 1.55, 1.28, 0.48); // eye white L
+  b(0.18,0.18,0.1,M.slEW, 1.55, 1.28,-0.48); // eye white R
+  b(0.1, 0.1, 0.06,M.slEy,1.6, 1.28, 0.5);  // pupil L
+  b(0.1, 0.1, 0.06,M.slEy,1.6, 1.28,-0.5);  // pupil R
+  // whiskers — thin flat boxes
+  b(0.55,0.04,0.04,M.slBl, 2.3, 0.96, 0.22);
+  b(0.55,0.04,0.04,M.slBl, 2.3, 0.96,-0.22);
+  b(0.55,0.04,0.04,M.slBl, 2.3, 0.88, 0.18);
+  b(0.55,0.04,0.04,M.slBl, 2.3, 0.88,-0.18);
+  // front flippers
+  const fl=new THREE.Mesh(new THREE.BoxGeometry(0.22*S,0.85*S,0.45*S),M.slBd);
+  fl.rotation.z= 0.5;fl.position.set(-0.6*S,0.52*S, 0.72*S);fl.castShadow=true;g.add(fl);
+  const fr=new THREE.Mesh(new THREE.BoxGeometry(0.22*S,0.85*S,0.45*S),M.slBd);
+  fr.rotation.z=-0.5;fr.position.set(-0.6*S,0.52*S,-0.72*S);fr.castShadow=true;g.add(fr);
+  // tail flukes
+  const tl=new THREE.Mesh(new THREE.BoxGeometry(0.6*S,0.18*S,0.7*S),M.slBd);
+  tl.rotation.z= 0.3;tl.position.set(-1.55*S,0.72*S, 0.5*S);tl.castShadow=true;g.add(tl);
+  const tr2=new THREE.Mesh(new THREE.BoxGeometry(0.6*S,0.18*S,0.7*S),M.slBd);
+  tr2.rotation.z=-0.3;tr2.position.set(-1.55*S,0.72*S,-0.5*S);tr2.castShadow=true;g.add(tr2);
+}
+
+function makeSealion3D(g,S){
+  const sc=1.25; // sealion is bigger + more upright
+  function b(w,h,d,mat,px,py,pz){const m=new THREE.Mesh(new THREE.BoxGeometry(w*S*sc,h*S*sc,d*S*sc),mat);m.position.set(px*S*sc,py*S*sc,pz*S*sc);m.castShadow=true;g.add(m);}
+  // body more upright — tilted
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.4*S*sc,2.4*S*sc,1.3*S*sc),M.slBd);
+  body.rotation.x=-0.35;body.position.set(0,1.3*S*sc,0);body.castShadow=true;g.add(body);
+  const belly=new THREE.Mesh(new THREE.BoxGeometry(0.9*S*sc,1.7*S*sc,0.3*S*sc),M.slBl);
+  belly.rotation.x=-0.35;belly.position.set(0,1.25*S*sc,0.65*S*sc);belly.castShadow=true;g.add(belly);
+  // head on top
+  b(1.2,1.1,1.1,M.slBd, 0, 2.9, 0.2);
+  // small ear nubs (distinguishes from seal)
+  b(0.18,0.26,0.16,M.slBd, 0, 3.5, 0.6);
+  b(0.18,0.26,0.16,M.slBd, 0, 3.5,-0.6);
+  // snout
+  b(0.7,0.4,0.6,M.slSn, 0, 2.7, 0.9);
+  // eyes
+  b(0.18,0.18,0.1,M.slEW, 0, 2.95, 0.58);
+  b(0.18,0.18,0.1,M.slEW, 0, 2.95,-0.58);
+  b(0.1,0.1,0.06,M.slEy,  0, 2.95, 0.62);
+  b(0.1,0.1,0.06,M.slEy,  0, 2.95,-0.62);
+  // front flippers (long, reaching ground)
+  const fl=new THREE.Mesh(new THREE.BoxGeometry(0.28*S*sc,1.4*S*sc,0.5*S*sc),M.slBd);
+  fl.rotation.z=0.4;fl.position.set(-0.95*S*sc,0.65*S*sc, 0.72*S*sc);fl.castShadow=true;g.add(fl);
+  const fr=new THREE.Mesh(new THREE.BoxGeometry(0.28*S*sc,1.4*S*sc,0.5*S*sc),M.slBd);
+  fr.rotation.z=-0.4;fr.position.set(-0.95*S*sc,0.65*S*sc,-0.72*S*sc);fr.castShadow=true;g.add(fr);
+  // hind flippers
+  b(0.55,0.2,0.9,M.slBd, 0, 0.18, 0.6);
+  b(0.55,0.2,0.9,M.slBd, 0, 0.18,-0.6);
+}
+
 // No 3D label sprites — tooltip is HTML-only, positioned via world projection
 
 // ── Spawn Laila + Waddler ────────────────────────────────────
@@ -636,9 +781,9 @@ function spawnAll(){
   if(lailaGroup)scene.remove(lailaGroup);
   if(waddlerGroup)scene.remove(waddlerGroup);
 
-  // Laila — player
+  // Laila — player (bow accessory identifies her)
   const lRefs={};
-  lailaGroup=buildPenguinGroup(PS,null,lRefs);
+  lailaGroup=buildPenguinGroup(PS,'bow',lRefs);
   lWL=lRefs.wL;lWR=lRefs.wR;lFL=lRefs.fL;lFR=lRefs.fR;lHead=lRefs.head;lBodyMesh=lRefs.body;
   lPos.set(0,0,0);
   lailaGroup.position.set(0,terrainH(0,0)-0.12*PS,0);
@@ -652,8 +797,8 @@ function spawnAll(){
   const wch=waddlerGroup.children;
   wWL=wch[8];wWR=wch[9];wFL=wch[10];wFR=wch[11];
 
-  const minD=Math.min(260+round*65,WRAD*.82);
-  const ang=Math.random()*Math.PI*2,d=minD+Math.random()*120;
+  const minD=Math.min(500+round*80,WRAD*.82);
+  const ang=Math.random()*Math.PI*2,d=minD+Math.random()*200;
   wPos.set(Math.cos(ang)*d,0,Math.sin(ang)*d);
   wYaw=0;wVX=0;wVZ=0;wTimer=0;wAnimT=0;wStep=0;
   waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
@@ -678,7 +823,7 @@ document.getElementById('gc').addEventListener('click',e=>{
 });
 
 // ── Tooltip ──────────────────────────────────────────────────
-const TYPE_LABELS={person:'Person',shop:'Shop',store:'Store',stall:'Stall',land:'Landmark',custom:'Place'};
+const TYPE_LABELS={person:'Person',shop:'Shop',store:'Store',stall:'Stall',land:'Landmark',seal:'Seal',sealion:'Sea Lion',custom:'Place'};
 const EL_tag=document.getElementById('poi-tag');
 const EL_ptType=document.getElementById('pt-type');
 const EL_ptName=document.getElementById('pt-name');
@@ -695,7 +840,7 @@ function showTooltip(poi){
 }
 function repositionTooltip(poi){
   if(!poi.group)return;
-  const typeH={person:5.0,shop:6.5,store:8.0,stall:6.0,land:7.0};
+  const typeH={person:5.0,shop:6.5,store:8.0,stall:6.0,land:7.0,seal:2.8,sealion:4.2};
   const gy=terrainH(poi.x,poi.z);
   _tooltipWP.set(poi.x,gy+(typeH[poi.type]||6.0)*CS,poi.z);
   _tooltipWP.project(camera);
@@ -706,7 +851,190 @@ function repositionTooltip(poi){
   EL_tag.style.top=Math.max(8,Math.min(window.innerHeight-th-8,sy-th-10))+'px';
 }
 function hideTooltip(){EL_tag.style.display='none';activePoi=null;}
-function openPoiLink(e){e.preventDefault();if(activePoi&&activePoi.url)window.open(activePoi.url,'_blank','noopener');return false;}
+function openPoiLink(e){
+  e.preventDefault();
+  if(activePoi&&activePoi.url){
+    trackClick(activePoi.id);
+    window.open(activePoi.url,'_blank','noopener');
+  }
+  return false;
+}
+
+// ── Waddler speech bubble ─────────────────────────────────────
+const EL_waddlerMsg=document.getElementById('waddler-msg');
+const _waddlerWP=new THREE.Vector3();
+let waddlerMsgTimer=null;
+function showWaddlerMsg(){
+  const gy=terrainH(wPos.x,wPos.z);
+  _waddlerWP.set(wPos.x,gy+6.5*PS,wPos.z);
+  _waddlerWP.project(camera);
+  if(_waddlerWP.z>1){EL_waddlerMsg.style.display='none';return;} // behind camera
+  const sx=(_waddlerWP.x+1)/2*window.innerWidth;
+  const sy=(-_waddlerWP.y+1)/2*window.innerHeight;
+  EL_waddlerMsg.style.left=Math.max(8,Math.min(window.innerWidth-240,sx-120))+'px';
+  EL_waddlerMsg.style.top=Math.max(8,sy-90)+'px';
+  // On first show, reset text and start 1.5s timer to change to "Selfie time!"
+  if(EL_waddlerMsg.style.display==='none'||EL_waddlerMsg.style.display===''){
+    document.getElementById('wb-text').textContent='Hey Laila!! You found me!! \uD83D\uDC99';
+    if(waddlerMsgTimer)clearTimeout(waddlerMsgTimer);
+    waddlerMsgTimer=setTimeout(()=>{
+      document.getElementById('wb-text').textContent='Selfie time! \uD83D\uDCF8';
+    },1500);
+  }
+  EL_waddlerMsg.style.display='block';
+}
+function hideWaddlerMsg(){
+  EL_waddlerMsg.style.display='none';
+  if(waddlerMsgTimer){clearTimeout(waddlerMsgTimer);waddlerMsgTimer=null;}
+  document.getElementById('wb-text').textContent='Hey Laila!! You found me!! \uD83D\uDC99';
+}
+
+// ── Reunion sequence ──────────────────────────────────────────
+let reunionPhase=null,reunionT=0;
+const EL_reunionHearts=document.getElementById('reunion-hearts');
+
+function startReunion(){
+  if(reunionPhase)return;
+  reunionPhase='approach';reunionT=0;
+  hideWaddlerMsg();
+  // stop Waddler wandering
+  wVX=0;wVZ=0;
+  sFound();
+  if(window.CrazyGames){try{window.CrazyGames.SDK.game.gameplayStop();}catch(e){}}
+  // Show hearts immediately, then selfie screen after 1.2s (wings spread in that time)
+  spawnHearts();
+  setTimeout(()=>{
+    EL_reunionHearts.style.display='none';
+    EL_reunionHearts.innerHTML='';
+    reunionPhase=null;
+    // Suspend audio — kills all remaining oscillator output (sPing, sFound notes)
+    if(ACX&&ACX.state==='running')ACX.suspend();
+    renderPortrait(); // capture 3D scene before showing screen
+    document.getElementById('found-msg').textContent=`Laila & Waddler \u2014 Round ${round} complete! \uD83D\uDC99`;
+    document.getElementById('found-screen').style.display='flex';
+  },1200);
+}
+
+function spawnHearts(){
+  EL_reunionHearts.style.display='block';
+  EL_reunionHearts.innerHTML='';
+  // Project world midpoint between Laila and Waddler onto screen
+  const mx=(lPos.x+wPos.x)/2, mz=(lPos.z+wPos.z)/2;
+  const mGy=terrainH(mx,mz)+3*PS;
+  _tooltipWP.set(mx,mGy,mz);
+  _tooltipWP.project(camera);
+  const sx=(_tooltipWP.x+1)/2*window.innerWidth;
+  const sy=(-_tooltipWP.y+1)/2*window.innerHeight;
+  ['💙','💗'].forEach((emoji,i)=>{
+    const h=document.createElement('div');
+    h.className='heart-bubble';
+    h.textContent=emoji;
+    h.style.left=(sx-18+i*36)+'px';
+    h.style.top=(sy-20)+'px';
+    h.style.fontSize='38px';
+    h.style.animationDelay=(i*.35)+'s';
+    h.style.animationDuration='2.5s';
+    EL_reunionHearts.appendChild(h);
+  });
+}
+
+function applyReunion(dt){
+  if(!reunionPhase)return;
+  reunionT+=dt;
+  const t=reunionT*.001;
+  // Both face toward camera — looks great and avoids angle-fighting
+  const camAngle=Math.atan2(camera.position.x-lPos.x, camera.position.z-lPos.z);
+  lailaGroup.rotation.y=-camAngle;
+  waddlerGroup.rotation.y=-(camAngle+0.25); // Waddler slightly angled
+  // Lock positions on terrain (no nudging — they're already close)
+  lailaGroup.position.set(lPos.x,terrainH(lPos.x,lPos.z)-0.12*PS,lPos.z);
+  waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
+  // Hug wings — ramp 0→1 over 0.4s starting at t=0.2s
+  const hug=Math.min(1,Math.max(0,(t-.2)*2.5));
+  // Wings spread OUTWARD (T-pose) — left wing down-left, right wing down-right
+  if(lWL)lWL.rotation.z=-hug*1.2;
+  if(lWR)lWR.rotation.z= hug*1.2;
+  if(wWL)wWL.rotation.z=-hug*1.2;
+  if(wWR)wWR.rotation.z= hug*1.2;
+}
+
+function renderPortrait(){
+  const pc=document.getElementById('portrait-canvas');
+  if(!pc||!renderer||!scene)return;
+  // Temporarily snap Waddler beside Laila for the selfie photo
+  const sideOffset=2.5*PS;
+  const snapWx=lPos.x+sideOffset, snapWz=lPos.z;
+  const savedWx=waddlerGroup.position.x, savedWz=waddlerGroup.position.z;
+  waddlerGroup.position.set(snapWx,terrainH(snapWx,snapWz)-0.12*PS,snapWz);
+  // Portrait camera — in FRONT of the penguins (positive Z direction from them)
+  const mx=(lPos.x+snapWx)/2, mz=lPos.z;
+  const mGy=terrainH(mx,mz);
+  const portCam=new THREE.PerspectiveCamera(40,1,0.5,1400);
+  portCam.position.set(mx,mGy+3.5,mz+6);
+  portCam.lookAt(mx,mGy+1.8,mz);
+  // Rotate BOTH penguins to face the portrait camera before rendering
+  const pfAngle=Math.atan2(portCam.position.x-mx, portCam.position.z-mz);
+  const savedLRot=lailaGroup.rotation.y, savedWRot=waddlerGroup.rotation.y;
+  lailaGroup.rotation.y=-pfAngle;
+  waddlerGroup.rotation.y=-pfAngle; // both face exactly the same direction for photo
+  // Ensure wings are fully spread for the portrait
+  if(lWL)lWL.rotation.z=-1.2; if(lWR)lWR.rotation.z=1.2;
+  if(wWL)wWL.rotation.z=-1.2; if(wWR)wWR.rotation.z=1.2;
+  // Render at 512×512
+  renderer.setSize(512,512,false);
+  renderer.render(scene,portCam);
+  // Restore rotations
+  lailaGroup.rotation.y=savedLRot; waddlerGroup.rotation.y=savedWRot;
+  // Copy pixels to portrait canvas
+  pc.width=512;pc.height=512;
+  const ctx=pc.getContext('2d');
+  ctx.drawImage(renderer.domElement,0,0,512,512);
+  // ── Text overlay ──────────────────────────────────────────────
+  // Dark band at bottom
+  ctx.fillStyle='rgba(0,0,0,0.40)';
+  ctx.fillRect(0,358,512,154);
+  ctx.textAlign='center';
+  // "Laila & Waddler" in pink
+  ctx.fillStyle='#ff77cc';
+  ctx.font='bold 30px Courier New';
+  ctx.fillText('Laila & Waddler',256,403);
+  // "Happily Ever After" in white
+  ctx.fillStyle='#ffffff';
+  ctx.font='bold 24px Courier New';
+  ctx.fillText('Happily Ever After \u2728',256,445);
+  // Two hearts floating above penguins
+  ctx.font='36px serif';
+  ctx.fillText('\uD83D\uDC99',185,115);  // 💙
+  ctx.fillText('\uD83D\uDC97',315,88);   // 💗
+  // ── Restore ───────────────────────────────────────────────────
+  renderer.setSize(window.innerWidth,window.innerHeight,false);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  // Restore Waddler to its actual position (wPos not changed)
+  waddlerGroup.position.set(savedWx,terrainH(savedWx,savedWz)-0.12*PS,savedWz);
+}
+
+function sharePortrait(){
+  const pc=document.getElementById('portrait-canvas');
+  if(!pc)return;
+  pc.toBlob(blob=>{
+    if(!blob)return;
+    const file=new File([blob],'laila-and-waddler.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({
+        title:'Laila found Waddler! 💙',
+        text:'I found Waddler in Finding Penguin! ❄️🐧',
+        files:[file],
+      }).catch(()=>{}); // user cancelled — ignore
+    } else {
+      // Desktop fallback: download the PNG
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='laila-and-waddler.png';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  },'image/png');
+}
 
 // ════════════════════════════════════════════
 // ADMIN + MAP SYSTEM
@@ -796,9 +1124,28 @@ function cancelPlace(){
 // ── Persistence ──────────────────────────────────────────────
 function savePOIs(){try{localStorage.setItem('fp_pois',JSON.stringify(POIS));}catch(e){}}
 function loadPOIs(){
-  try{const d=localStorage.getItem('fp_pois');if(d){POIS=JSON.parse(d);return;}}catch(e){}
-  // fallback: pois.json
+  try{const d=localStorage.getItem('fp_pois');if(d){
+    POIS=JSON.parse(d);
+    // Normalise missing visible field → true
+    POIS.forEach(p=>{if(p.visible===undefined)p.visible=true;});
+    return;
+  }}catch(e){}
   fetch('pois.json').then(r=>r.json()).then(data=>{if(data&&data.pois)POIS=data.pois;}).catch(()=>{});
+}
+
+// ── Settings (terrain density, worker URL) ───────────────────
+function loadSettings(){
+  try{const d=localStorage.getItem('fp_settings');if(d)return JSON.parse(d);}catch(e){}
+  return {terrainDensity:4,workerUrl:''};
+}
+
+// ── Analytics click tracking ─────────────────────────────────
+function trackClick(poiId){
+  try{
+    const url=(loadSettings().workerUrl||'').trim();
+    if(!url)return;
+    fetch(url+'/click?id='+encodeURIComponent(poiId),{method:'POST'}).catch(()=>{});
+  }catch(e){}
 }
 
 // ── Map draw ─────────────────────────────────────────────────
@@ -814,7 +1161,7 @@ function drawMap(){
   mX.strokeStyle='rgba(100,160,220,.2)';mX.lineWidth=2;mX.beginPath();mX.arc(half,half,WRAD*scale,0,Math.PI*2);mX.stroke();
 
   // type colours on map
-  const TC={person:'#5588ff',shop:'#ff8844',store:'#44aa66',stall:'#cc44aa',land:'#8888cc',custom:'#aaaaaa'};
+  const TC={person:'#5588ff',shop:'#ff8844',store:'#44aa66',stall:'#cc44aa',land:'#8888cc',seal:'#44aacc',sealion:'#2299bb',custom:'#aaaaaa'};
   POIS.forEach(p=>{
     const px=half+p.x*scale,pz=half+p.z*scale;
     mX.fillStyle=TC[p.type]||'#888';
@@ -945,7 +1292,9 @@ function updateHUD(){
   const ctxt=d<12?'💙':ARR[Math.round(rel/(Math.PI/4))%8];
   if(ctxt!==_lastCompass){EL_compass.textContent=ctxt;_lastCompass=ctxt;}
   sPing(Math.max(0,1-d/600));
-  if(d<6)foundPenguin();
+  // Waddler speech bubble when nearby
+  if(d<12&&!reunionPhase){showWaddlerMsg();startReunion();}
+  else if(d>=12||reunionPhase){hideWaddlerMsg();}
 
   // POI proximity
   let cl=null,cd=30;
@@ -970,8 +1319,8 @@ function gameLoop(ts){
   const tr=K['ArrowRight']||K['d']||K['D'];
   const tf=K['ArrowUp']||K['w']||K['W'];
   const tb=K['ArrowDown']||K['s']||K['S'];
-  const anyMove=tl||tr||tf||tb||Math.abs(TD.x)>.01||Math.abs(TD.z)>.01;
-  if(tl)lYaw-=.024;if(tr)lYaw+=.024;lYaw+=TD.z*.028;
+  const anyMove=(!reunionPhase)&&(tl||tr||tf||tb||Math.abs(TD.x)>.01||Math.abs(TD.z)>.01);
+  if(!reunionPhase){if(tl)lYaw-=.024;if(tr)lYaw+=.024;lYaw+=TD.z*.016;}
 
   const inAction=['jump','circle','wave','bow'].includes(lState);
   if(!inAction){
@@ -995,7 +1344,9 @@ function gameLoop(ts){
     if(Math.abs(TD.x)>.01){mx+=fX*TD.x;mz+=fZ*TD.x;}
   }
   if(Math.abs(mx)>.0005||Math.abs(mz)>.0005){
-    const len=Math.hypot(mx,mz)||1,spd=SPEED*dt*.5,LIM=WRAD*.9;
+    const usingTouch=Math.abs(TD.x)>.01||Math.abs(TD.z)>.01;
+    const spd=SPEED*dt*.5*(usingTouch?.48:1),LIM=WRAD*.9;
+    const len=Math.hypot(mx,mz)||1;
     lPos.x=Math.max(-LIM,Math.min(LIM,lPos.x+(mx/len)*spd));
     lPos.z=Math.max(-LIM,Math.min(LIM,lPos.z+(mz/len)*spd));
     lAnimT+=dt;if(lAnimT>230){lStep=(lStep+1)%8;lAnimT=0;sStep();}
@@ -1008,16 +1359,19 @@ function gameLoop(ts){
     lailaGroup.position.x=lPos.x;lailaGroup.position.z=lPos.z;
     if(lState==='sleep')lailaGroup.position.y=gy-0.9*PS;
   }
-  lailaGroup.rotation.y=-lYaw;applyAnim(dt);
+  if(!reunionPhase)lailaGroup.rotation.y=-lYaw;
+  applyAnim(dt);applyReunion(dt);
 
-  // Waddler AI
-  wTimer-=dt;
-  if(wTimer<=0){wTimer=2000+Math.random()*3500;const a=Math.random()*Math.PI*2;wVX=Math.cos(a)*.04;wVZ=Math.sin(a)*.04;wYaw=a;}
-  const WL=WRAD*.88;
-  wPos.x=Math.max(-WL,Math.min(WL,wPos.x+wVX));wPos.z=Math.max(-WL,Math.min(WL,wPos.z+wVZ));
-  waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
-  waddlerGroup.rotation.y=wYaw;
-  wAnimT+=dt;if(wAnimT>240){wStep=(wStep+1)%8;wAnimT=0;}animW(wStep);
+  // Waddler AI — frozen during reunion
+  if(!reunionPhase){
+    wTimer-=dt;
+    if(wTimer<=0){wTimer=2000+Math.random()*3500;const a=Math.random()*Math.PI*2;wVX=Math.cos(a)*.04;wVZ=Math.sin(a)*.04;wYaw=a;}
+    const WL=WRAD*.88;
+    wPos.x=Math.max(-WL,Math.min(WL,wPos.x+wVX));wPos.z=Math.max(-WL,Math.min(WL,wPos.z+wVZ));
+    waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
+    waddlerGroup.rotation.y=wYaw;
+    wAnimT+=dt;if(wAnimT>240){wStep=(wStep+1)%8;wAnimT=0;}animW(wStep);
+  }
 
   // Snowfall follows player
   if(_sfPoints){_sfPoints.position.x=lPos.x;_sfPoints.position.z=lPos.z;}
@@ -1033,10 +1387,29 @@ function foundPenguin(){
   document.getElementById('found-msg').textContent=`Laila found Waddler! 💙  Round ${round} complete.`;
   document.getElementById('found-screen').style.display='flex';
 }
-function nextRound(){round++;document.getElementById('found-screen').style.display='none';spawnAll();gameRunning=true;}
-function startGame(){
-  initAudio();introAlive=false;document.getElementById('intro-screen').style.display='none';
-  loadPOIs();initThree();buildWorld();spawnAll();gameRunning=true;requestAnimationFrame(gameLoop);
+function nextRound(){
+  round++;
+  reunionPhase=null;reunionT=0;
+  // Reset wing poses for next round
+  if(lWL)lWL.rotation.z=0;if(lWR)lWR.rotation.z=0;
+  if(wWL)wWL.rotation.z=0;if(wWR)wWR.rotation.z=0;
+  EL_reunionHearts.style.display='none';EL_reunionHearts.innerHTML='';
+  hideWaddlerMsg();
+  document.getElementById('found-screen').style.display='none';
+  // Resume audio for next round
+  if(ACX&&ACX.state==='suspended')ACX.resume();
+  spawnAll();gameRunning=true;
+  if(window.CrazyGames){try{window.CrazyGames.SDK.game.gameplayStart();}catch(e){}}
+}
+async function startGame(){
+  initAudio();
+  // Hide intro immediately — instant feedback, no waiting for SDK
+  introAlive=false;
+  document.getElementById('intro-screen').style.display='none';
+  loadPOIs();initThree();buildWorld();spawnAll();gameRunning=true;
+  requestAnimationFrame(gameLoop);
+  // Init SDK in background after game is already running
+  if(window.CrazyGames){try{await window.CrazyGames.SDK.init();window.CrazyGames.SDK.game.gameplayStart();}catch(e){}}
 }
 
 // ── Input ──────────────────────────────────────────────────────
@@ -1066,7 +1439,7 @@ document.getElementById('gc').addEventListener('touchstart',e=>{
   e.preventDefault();initAudio();const t=e.changedTouches[0];tID=t.identifier;tOrig={x:t.clientX,y:t.clientY};
 },{passive:false});
 document.getElementById('gc').addEventListener('touchmove',e=>{
-  e.preventDefault();for(const t of e.changedTouches){if(t.identifier!==tID)continue;const dx=t.clientX-tOrig.x,dy=t.clientY-tOrig.y;const mag=Math.hypot(dx,dy);if(mag>12){TD.x=-dy/mag;TD.z=dx/mag;}}
+  e.preventDefault();for(const t of e.changedTouches){if(t.identifier!==tID)continue;const dx=t.clientX-tOrig.x,dy=t.clientY-tOrig.y;const mag=Math.hypot(dx,dy);if(mag>22){TD.x=-dy/mag;TD.z=dx/mag;}}
 },{passive:false});
 document.getElementById('gc').addEventListener('touchend',e=>{e.preventDefault();TD.x=0;TD.z=0;tID=null;tOrig=null;},{passive:false});
 </script>
