@@ -139,9 +139,10 @@ canvas{display:block;}
 <canvas id="gc"></canvas>
 
 <div id="hud">
-  <div id="peng-btn" title="Double-click for map">🐧</div>
+  <img src="logo.png" id="hud-logo" alt="Finding Penguin" title="Double-click for map" style="height:36px;max-height:36px;filter:drop-shadow(0 2px 8px rgba(60,120,220,.5));cursor:pointer;pointer-events:all;display:block;">
   <div id="hud-center">
-    <img src="logo.png" id="hud-logo" alt="Finding Penguin" style="height:36px;max-height:36px;filter:drop-shadow(0 2px 8px rgba(60,120,220,.5));display:block;">
+    <div id="gtitle">FINDING PENGUIN</div>
+    <div id="gsubtitle">a love story in the snow</div>
   </div>
   <div id="hud-right">
     <div id="warmth">❄️ Searching...</div>
@@ -1022,7 +1023,8 @@ function sharePortrait(){
     if(navigator.canShare&&navigator.canShare({files:[file]})){
       navigator.share({
         title:'Laila found Waddler! 💙',
-        text:'I found Waddler in Finding Penguin! ❄️🐧',
+        text:'I found Waddler in Finding Penguin! ❄️🐧\nfindingpenguin.com',
+        url:'https://findingpenguin.com',
         files:[file],
       }).catch(()=>{}); // user cancelled — ignore
     } else {
@@ -1073,7 +1075,7 @@ function pickType(t,el){
 
 // Map open/close
 let mapDT=null;
-document.getElementById('peng-btn').addEventListener('click',()=>{
+document.getElementById('hud-logo').addEventListener('click',()=>{
   if(mapDT){clearTimeout(mapDT);mapDT=null;openMap();}
   else mapDT=setTimeout(()=>mapDT=null,340);
 });
