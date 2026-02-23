@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waddle and Laila - Fixed Feet</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f8ff; font-family: sans-serif; }
+        #info {
+            position: absolute; top: 10px; width: 100%; text-align: center; 
+            color: #333; pointer-events: none; z-index: 100;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="info">
+        <h2>Waddle & Laila (Fixed Feet Connections)</h2>
+        <p>Click and drag to rotate.</p>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. SCENE SETUP
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xdcecf5);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 6, 14);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 2, 0);
+
+        // 2. LIGHTING & FLOOR
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(30, 30),
+            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // 3. MATERIALS
+        const M = {
+            pB: new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: 0.9 }), // Dark blue/black body
+            pW: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 }), // White belly/eyes
+            pE: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }), // Eye white
+            pP: new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.5 }), // Pupil
+            pO: new THREE.MeshStandardMaterial({ color: 0xf4cc42, roughness: 0.7 }), // Yellow/Orange (Beak/Feet)
+            vBow: new THREE.MeshStandardMaterial({ color: 0xff66b2, roughness: 0.6 }), // Pink bow
+            vBwK: new THREE.MeshStandardMaterial({ color: 0xff3399, roughness: 0.6 })  // Darker pink knot
+        };
+
+        function buildPenguinGroup(scale, variant) {
+            const g = new THREE.Group();
+            const S = scale;
+
+            function bx(w, h, d, mat, px, py, pz) {
+                const m = new THREE.Mesh(new THREE.BoxGeometry(w * S, h * S, d * S), mat);
+                m.position.set(px * S, py * S, pz * S);
+                m.castShadow = true;
+                g.add(m);
+                return m;
+            }
+
+            // --- CORE BODY PARTS ---
+            bx(1.9, 2.4, 1.7, M.pB, 0, 1.4, 0); // Body
+            bx(1.4, 1.8, 0.2, M.pW, 0, 1.35, 0.86); // Belly
+            bx(1.6, 1.4, 1.5, M.pB, 0, 3.2, 0); // Head (Smaller for "shoulders")
+
+            // Eyes & Beak
+            bx(0.25, 0.25, 0.1, M.pE, -0.35, 3.3, 0.76);
+            bx(0.25, 0.25, 0.1, M.pE, 0.35, 3.3, 0.76);
+            bx(0.12, 0.12, 0.1, M.pP, -0.35, 3.3, 0.78);
+            bx(0.12, 0.12, 0.1, M.pP, 0.35, 3.3, 0.78);
+            bx(0.5, 0.3, 0.4, M.pO, 0, 3.0, 0.85);
+
+            // Wings (Relaxed pose)
+            const wL = bx(0.35, 1.5, 0.7, M.pB, -1.0, 1.5, 0);
+            wL.rotation.z = -0.3; 
+            const wR = bx(0.35, 1.5, 0.7, M.pB, 1.0, 1.5, 0);
+            wR.rotation.z = 0.3;
+
+            // Tail
+            bx(0.6, 0.3, 0.5, M.pB, 0, 0.4, -0.85);
+
+            // --- FIXED: VISIBLE LEG CONNECTORS ---
+            // Increased height to 0.8 and moved Y to 0.6 so they poke out of the body
+            bx(0.45, 0.5, 0.45, M.pO, -0.5, 0.1, 0.2); 
+            bx(0.45, 0.5, 0.45, M.pO, 0.5, 0.1, 0.2);  
+
+            // --- FIXED: TALLER FEET & CONNECTED TOES ---
+            const footHeight = 0.2; // Taller foot base
+            const toeSize = 0.2;
+            const footY = -0.07;     // Grounded position
+
+            // Left Foot
+            bx(0.7, footHeight, 0.8, M.pO, -0.5, footY, 0.3); // Base
+            bx(0.18, footHeight, toeSize, M.pO, -0.7, footY, 0.75); // Toe L
+            bx(0.18, footHeight, toeSize, M.pO, -0.5, footY, 0.75); // Toe M
+            bx(0.18, footHeight, toeSize, M.pO, -0.3, footY, 0.75); // Toe R
+
+            // Right Foot
+            bx(0.7, footHeight, 0.8, M.pO, 0.5, footY, 0.3); // Base
+            bx(0.18, footHeight, toeSize, M.pO, 0.3, footY, 0.75);  // Toe L
+            bx(0.18, footHeight, toeSize, M.pO, 0.5, footY, 0.75);  // Toe M
+            bx(0.18, footHeight, toeSize, M.pO, 0.7, footY, 0.75);  // Toe R
+
+            // --- VARIANTS ---
+            if (variant === 'bow') {
+                const bl = bx(0.4, 0.25, 0.2, M.vBow, -0.25, 3.9, 0.2);
+                bl.rotation.z = -0.4;
+                const br = bx(0.4, 0.25, 0.2, M.vBow, 0.25, 3.9, 0.2);
+                br.rotation.z = 0.4;
+                bx(0.18, 0.18, 0.18, M.vBwK, 0, 3.9, 0.22);
+            }
+
+            return g;
+        }
+        // 5. CREATE CHARACTERS
+        const penguinScale = 1;
+
+        // Create Waddle
+        const waddle = buildPenguinGroup(penguinScale, null);
+        waddle.position.set(-2, 0, 0);
+        scene.add(waddle);
+
+        // Create Laila
+        const laila = buildPenguinGroup(penguinScale, 'bow');
+        laila.position.set(2, 0, 0);
+        scene.add(laila);
+
+
+        // 6. ANIMATION LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
