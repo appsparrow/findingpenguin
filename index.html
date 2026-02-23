@@ -593,49 +593,52 @@ function buildPenguinGroup(scale, variant, refs){
     m.position.set(px*S,py*S,pz*S);m.castShadow=true;g.add(m);return m;
   }
   // body
-  const body=bx(1.9,2.4,1.7,M.pB,0,1.2,0);
+  const body=bx(1.9,2.4,1.7,M.pB,0,1.4,0);
   // belly
-  bx(1.26,1.72,.28,M.pW,0,1.1,.86);
-  // head
-  const head=bx(1.65,1.55,1.55,M.pB,0,2.82,0);
+  bx(1.4,1.8,.2,M.pW,0,1.35,.86);
+  // head (smaller, sits on shoulders)
+  const head=bx(1.6,1.4,1.5,M.pB,0,3.2,0);
   // eyes
-  bx(.28,.28,.1,M.pE,-.42,2.92,.78);bx(.28,.28,.1,M.pE,.42,2.92,.78);
-  bx(.16,.16,.06,M.pP,-.42,2.92,.83);bx(.16,.16,.06,M.pP,.42,2.92,.83);
+  bx(.25,.25,.1,M.pE,-.35,3.3,.76);bx(.25,.25,.1,M.pE,.35,3.3,.76);
+  // pupils
+  bx(.12,.12,.1,M.pP,-.35,3.3,.78);bx(.12,.12,.1,M.pP,.35,3.3,.78);
   // beak
-  bx(.5,.32,.55,M.pO,0,2.66,1.0);
-  // wings
-  const wL=bx(.48,1.65,.62,M.pB,-1.18,1.2,0);
-  const wR=bx(.48,1.65,.62,M.pB,1.18,1.2,0);
-  // feet
-  const fL=bx(.72,.22,.95,M.pO,-.5,.12,.28);
-  const fR=bx(.72,.22,.95,M.pO,.5,.12,.28);
+  bx(.5,.3,.4,M.pO,0,3.0,.85);
+  // wings (relaxed angled pose)
+  const wL=bx(.35,1.5,.7,M.pB,-1.0,1.5,0);wL.rotation.z=-0.3;
+  const wR=bx(.35,1.5,.7,M.pB,1.0,1.5,0);wR.rotation.z=0.3;
+  // tail
+  bx(.6,.3,.5,M.pB,0,.4,-.85);
+  // leg connectors
+  bx(.45,.5,.45,M.pO,-.5,.1,.2);
+  bx(.45,.5,.45,M.pO,.5,.1,.2);
+  // feet with toes
+  const fH=0.2,tS=0.2,fY=-0.07;
+  const fL=bx(.7,fH,.8,M.pO,-.5,fY,.3);
+  bx(.18,fH,tS,M.pO,-.7,fY,.75);bx(.18,fH,tS,M.pO,-.5,fY,.75);bx(.18,fH,tS,M.pO,-.3,fY,.75);
+  const fR=bx(.7,fH,.8,M.pO,.5,fY,.3);
+  bx(.18,fH,tS,M.pO,.3,fY,.75);bx(.18,fH,tS,M.pO,.5,fY,.75);bx(.18,fH,tS,M.pO,.7,fY,.75);
 
   // Accessories
   if(variant==='hat'){
-    bx(1.5,.14,1.5,M.vHat,0,3.62,0); // brim
-    bx(.9,.7,.9,M.vHat,0,4.05,0);    // crown
+    bx(1.5,.14,1.5,M.vHat,0,4.05,0); // brim
+    bx(.9,.7,.9,M.vHat,0,4.48,0);    // crown
   } else if(variant==='shades'){
-    const lns=new THREE.Mesh(new THREE.BoxGeometry(.32*S,.2*S,.08*S),M.vShd);lns.position.set(-.38*S,2.9*S,.83*S);g.add(lns);
-    const rns=new THREE.Mesh(new THREE.BoxGeometry(.32*S,.2*S,.08*S),M.vShd);rns.position.set(.38*S,2.9*S,.83*S);g.add(rns);
-    const br=new THREE.Mesh(new THREE.BoxGeometry(.82*S,.08*S,.06*S),M.vShd);br.position.set(0,2.9*S,.83*S);g.add(br);
+    const lns=new THREE.Mesh(new THREE.BoxGeometry(.32*S,.2*S,.08*S),M.vShd);lns.position.set(-.38*S,3.3*S,.8*S);g.add(lns);
+    const rns=new THREE.Mesh(new THREE.BoxGeometry(.32*S,.2*S,.08*S),M.vShd);rns.position.set(.38*S,3.3*S,.8*S);g.add(rns);
+    const br=new THREE.Mesh(new THREE.BoxGeometry(.82*S,.08*S,.06*S),M.vShd);br.position.set(0,3.3*S,.8*S);g.add(br);
   } else if(variant==='scarf'){
-    bx(1.7,.4,1.7,M.vScf,0,2.1,0); // scarf ring around neck
+    bx(1.7,.4,1.7,M.vScf,0,2.55,0); // scarf ring around neck
   } else if(variant==='skate'){
-    // deck
     const dk=new THREE.Mesh(new THREE.BoxGeometry(1.1*S,.12*S,2.2*S),M.vDck);dk.position.set(0,-.1*S,.2*S);dk.castShadow=true;g.add(dk);
-    // wheels
     [[-0.4,-.22,-.7],[0.4,-.22,-.7],[-0.4,-.22,.9],[0.4,-.22,.9]].forEach(([wx,wy,wz])=>{
       const w=new THREE.Mesh(new THREE.CylinderGeometry(.16*S,.16*S,.14*S,6),M.vWhl);
       w.rotation.z=Math.PI/2;w.position.set(wx*S,wy*S,wz*S);w.castShadow=true;g.add(w);
     });
   } else if(variant==='bow'){
-    // Pink bow on top-right of head — left loop, right loop, knot
-    const bl=new THREE.Mesh(new THREE.BoxGeometry(.42*S,.3*S,.12*S),M.vBow);
-    bl.position.set(-.26*S,3.74*S,.05*S);bl.rotation.z=.42;g.add(bl);
-    const br=new THREE.Mesh(new THREE.BoxGeometry(.42*S,.3*S,.12*S),M.vBow);
-    br.position.set(.26*S,3.74*S,.05*S);br.rotation.z=-.42;g.add(br);
-    const bk=new THREE.Mesh(new THREE.BoxGeometry(.18*S,.18*S,.14*S),M.vBwK);
-    bk.position.set(0,3.74*S,.05*S);g.add(bk);
+    const bl=bx(.4,.25,.2,M.vBow,-.25,4.2,.2);bl.rotation.z=-0.4;
+    const br=bx(.4,.25,.2,M.vBow,.25,4.2,.2);br.rotation.z=0.4;
+    bx(.18,.18,.18,M.vBwK,0,4.2,.22);
   }
 
   if(refs){refs.wL=wL;refs.wR=wR;refs.fL=fL;refs.fR=fR;refs.head=head;refs.body=body;}
@@ -645,10 +648,9 @@ function buildPenguinGroup(scale, variant, refs){
 // ── Player & Waddler ─────────────────────────────────────────
 function makePenguin(isW){
   if(isW){
-    const g=buildPenguinGroup(PS,null,null);
-    // store waddler refs manually since we can't pass refs obj easily inline
-    const ch=g.children;
-    wWL=ch[7];wWR=ch[8];wFL=ch[9];wFR=ch[10];
+    const refs={};
+    const g=buildPenguinGroup(PS,null,refs);
+    wWL=refs.wL;wWR=refs.wR;wFL=refs.fL;wFR=refs.fR;
     return g;
   } else {
     const refs={};
@@ -821,16 +823,15 @@ function spawnAll(){
   lailaGroup=buildPenguinGroup(PS,'bow',lRefs);
   lWL=lRefs.wL;lWR=lRefs.wR;lFL=lRefs.fL;lFR=lRefs.fR;lHead=lRefs.head;lBodyMesh=lRefs.body;
   lPos.set(0,0,0);
-  lailaGroup.position.set(0,terrainH(0,0)-0.12*PS,0);
+  lailaGroup.position.set(0,terrainH(0,0)+0.17*PS,0);
   lYaw=0;camYaw=0;lAnimT=0;lStep=0;
   lState='idle';stateT=0;idleT=0;waddleT=0;waddleNext=5000+Math.random()*6000;
   scene.add(lailaGroup);
 
   // Waddler — wanders
-  waddlerGroup=buildPenguinGroup(PS,null,null);
-  // wire up waddler refs from children order: body(0),belly(1),head(2),eyeL(3),eyeR(4),pupL(5),pupR(6),beak(7),wL(8),wR(9),fL(10),fR(11)
-  const wch=waddlerGroup.children;
-  wWL=wch[8];wWR=wch[9];wFL=wch[10];wFR=wch[11];
+  const wrefs={};
+  waddlerGroup=buildPenguinGroup(PS,null,wrefs);
+  wWL=wrefs.wL;wWR=wrefs.wR;wFL=wrefs.fL;wFR=wrefs.fR;
 
   const _st=loadSettings();
   const _diff=Math.max(1,Math.min(5,_st.difficulty||3));  // 1=easy,3=medium,5=hard
@@ -842,16 +843,35 @@ function spawnAll(){
   const ang=Math.random()*Math.PI*2,d=Math.min(minD+Math.random()*(_wrad*.1),maxD);
   wPos.set(Math.cos(ang)*d,0,Math.sin(ang)*d);
   wYaw=0;wVX=0;wVZ=0;wTimer=0;wAnimT=0;wStep=0;
-  waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
+  waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)+0.17*PS,wPos.z);
   scene.add(waddlerGroup);
 }
 
 // ── POI click (3D canvas) ────────────────────────────────────
-document.getElementById('gc').addEventListener('click',e=>{
-  if(!gameRunning||!POIS.length)return;
+function handleCanvasTap(clientX,clientY){
+  if(!gameRunning)return;
   const rect=document.getElementById('gc').getBoundingClientRect();
-  const ndc=new THREE.Vector2(((e.clientX-rect.left)/rect.width)*2-1,-((e.clientY-rect.top)/rect.height)*2+1);
+  const ndc=new THREE.Vector2(((clientX-rect.left)/rect.width)*2-1,-((clientY-rect.top)/rect.height)*2+1);
   const ray=new THREE.Raycaster();ray.setFromCamera(ndc,camera);
+
+  // ── Tap Waddler to unite when close enough ──────────────────
+  if(!reunionPhase&&waddlerGroup){
+    const d=Math.hypot(lPos.x-wPos.x,lPos.z-wPos.z)/PS;
+    if(d<18){
+      const wTargets=[];waddlerGroup.children.forEach(c=>{if(c.isMesh)wTargets.push(c);});
+      const wHits=ray.intersectObjects(wTargets,false);
+      if(wHits.length){
+        if(_reunionTimer){clearTimeout(_reunionTimer);_reunionTimer=null;}
+        _reunionQueued=false;
+        showWaddlerMsg();
+        _reunionTimer=setTimeout(()=>{startReunion();},800);
+        return;
+      }
+    }
+  }
+
+  // ── POI tap ──────────────────────────────────────────────────
+  if(!POIS.length){hideTooltip();return;}
   const targets=[];
   POIS.forEach(p=>{if(p.group)p.group.children.forEach(c=>{if(c.isMesh)targets.push(c);});});
   const hits=ray.intersectObjects(targets,false);
@@ -861,7 +881,9 @@ document.getElementById('gc').addEventListener('click',e=>{
     if(poi){showTooltip(poi);return;}
   }
   hideTooltip();
-});
+}
+
+document.getElementById('gc').addEventListener('click',e=>{handleCanvasTap(e.clientX,e.clientY);});
 
 // ── Tooltip ──────────────────────────────────────────────────
 const TYPE_LABELS={person:'Person',shop:'Shop',store:'Store',stall:'Stall',land:'Landmark',seal:'Seal',polarbear:'Polar Bear',custom:'Place'};
@@ -931,7 +953,7 @@ function hideWaddlerMsg(){
 }
 
 // ── Reunion sequence ──────────────────────────────────────────
-let reunionPhase=null,reunionT=0,_reunionQueued=false,_reunionTimer=null;
+let reunionPhase=null,reunionT=0,_reunionQueued=false,_reunionTimer=null,_reunionEndTimer=null;
 const EL_reunionHearts=document.getElementById('reunion-hearts');
 
 function startReunion(){
@@ -945,7 +967,8 @@ function startReunion(){
   if(window.CrazyGames){try{window.CrazyGames.SDK.game.gameplayStop();}catch(e){}}
   // Show hearts immediately, then selfie screen after 1.2s (wings spread in that time)
   spawnHearts();
-  setTimeout(()=>{
+  _reunionEndTimer=setTimeout(()=>{
+    _reunionEndTimer=null;
     EL_reunionHearts.style.display='none';
     EL_reunionHearts.innerHTML='';
     reunionPhase=null;
@@ -989,8 +1012,8 @@ function applyReunion(dt){
   lailaGroup.rotation.y=-camAngle;
   waddlerGroup.rotation.y=-(camAngle+0.25); // Waddler slightly angled
   // Lock positions on terrain (no nudging — they're already close)
-  lailaGroup.position.set(lPos.x,terrainH(lPos.x,lPos.z)-0.12*PS,lPos.z);
-  waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
+  lailaGroup.position.set(lPos.x,terrainH(lPos.x,lPos.z)+0.17*PS,lPos.z);
+  waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)+0.17*PS,wPos.z);
   // Hug wings — ramp 0→1 over 0.4s starting at t=0.2s
   const hug=Math.min(1,Math.max(0,(t-.2)*2.5));
   // Wings spread OUTWARD (T-pose) — left wing down-left, right wing down-right
@@ -1007,7 +1030,7 @@ function renderPortrait(){
   const sideOffset=2.5*PS;
   const snapWx=lPos.x+sideOffset, snapWz=lPos.z;
   const savedWx=waddlerGroup.position.x, savedWz=waddlerGroup.position.z;
-  waddlerGroup.position.set(snapWx,terrainH(snapWx,snapWz)-0.12*PS,snapWz);
+  waddlerGroup.position.set(snapWx,terrainH(snapWx,snapWz)+0.17*PS,snapWz);
   // Portrait camera — in FRONT of the penguins (positive Z direction from them)
   const mx=(lPos.x+snapWx)/2, mz=lPos.z;
   const mGy=terrainH(mx,mz);
@@ -1037,7 +1060,7 @@ function renderPortrait(){
   // Restore rotations
   lailaGroup.rotation.y=savedLRot; waddlerGroup.rotation.y=savedWRot;
   // Restore Waddler to its actual position
-  waddlerGroup.position.set(savedWx,terrainH(savedWx,savedWz)-0.12*PS,savedWz);
+  waddlerGroup.position.set(savedWx,terrainH(savedWx,savedWz)+0.17*PS,savedWz);
   // ── Text overlay ──────────────────────────────────────────────
   ctx.fillStyle='rgba(0,0,0,0.40)';
   ctx.fillRect(0,358,512,154);
@@ -1397,10 +1420,10 @@ function gameLoop(ts){
 
   const gy=terrainH(lPos.x,lPos.z);
   if(lState!=='sleep'&&lState!=='jump'){
-    lailaGroup.position.set(lPos.x,gy-0.12*PS,lPos.z);
+    lailaGroup.position.set(lPos.x,gy+0.17*PS,lPos.z);
   }else{
     lailaGroup.position.x=lPos.x;lailaGroup.position.z=lPos.z;
-    if(lState==='sleep')lailaGroup.position.y=gy-0.9*PS;
+    if(lState==='sleep')lailaGroup.position.y=gy-0.6*PS;
   }
   if(!reunionPhase)lailaGroup.rotation.y=-lYaw;
   applyAnim(dt);applyReunion(dt);
@@ -1411,7 +1434,7 @@ function gameLoop(ts){
     if(wTimer<=0){wTimer=2000+Math.random()*3500;const a=Math.random()*Math.PI*2;wVX=Math.cos(a)*.04;wVZ=Math.sin(a)*.04;wYaw=a;}
     const WL=WRAD*.88;
     wPos.x=Math.max(-WL,Math.min(WL,wPos.x+wVX));wPos.z=Math.max(-WL,Math.min(WL,wPos.z+wVZ));
-    waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)-0.12*PS,wPos.z);
+    waddlerGroup.position.set(wPos.x,terrainH(wPos.x,wPos.z)+0.17*PS,wPos.z);
     waddlerGroup.rotation.y=wYaw;
     wAnimT+=dt;if(wAnimT>240){wStep=(wStep+1)%8;wAnimT=0;}animW(wStep);
   }
@@ -1434,6 +1457,7 @@ function nextRound(){
   round++;
   reunionPhase=null;reunionT=0;_reunionQueued=false;
   if(_reunionTimer){clearTimeout(_reunionTimer);_reunionTimer=null;}
+  if(_reunionEndTimer){clearTimeout(_reunionEndTimer);_reunionEndTimer=null;}
   // Reset wing poses for next round
   if(lWL)lWL.rotation.z=0;if(lWR)lWR.rotation.z=0;
   if(wWL)wWL.rotation.z=0;if(wWR)wWR.rotation.z=0;
@@ -1485,7 +1509,17 @@ document.getElementById('gc').addEventListener('touchstart',e=>{
 document.getElementById('gc').addEventListener('touchmove',e=>{
   e.preventDefault();for(const t of e.changedTouches){if(t.identifier!==tID)continue;const dx=t.clientX-tOrig.x,dy=t.clientY-tOrig.y;const mag=Math.hypot(dx,dy);if(mag>22){TD.x=-dy/mag;TD.z=dx/mag;}}
 },{passive:false});
-document.getElementById('gc').addEventListener('touchend',e=>{e.preventDefault();TD.x=0;TD.z=0;tID=null;tOrig=null;},{passive:false});
+document.getElementById('gc').addEventListener('touchend',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    if(t.identifier!==tID)continue;
+    // Short tap (no drag) — treat as a click
+    if(tOrig&&Math.hypot(t.clientX-tOrig.x,t.clientY-tOrig.y)<12){
+      handleCanvasTap(t.clientX,t.clientY);
+    }
+  }
+  TD.x=0;TD.z=0;tID=null;tOrig=null;
+},{passive:false});
 </script>
 </body>
 </html>
