@@ -3,19 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Finding Penguin 🐧 — A Love Story in the Snow</title>
+<title>Finding Penguin 🐧 — Free 3D Penguin Adventure Game</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
-<meta name="description" content="Finding Penguin — a charming 3D adventure game where Laila searches the endless snowfields to reunite with her lost penguin Waddler. Walk, explore, and find true love in the snow!">
-<meta name="keywords" content="finding penguin, penguin game, cute game, adventure game, 3D browser game, HTML5 game, snow game, love story game, casual game, free online game, CrazyGames, puzzle game, family game">
-<meta property="og:title" content="Finding Penguin 🐧 — A Love Story in the Snow">
-<meta property="og:description" content="Help Laila find Waddler across the endless snowfields in this charming 3D adventure. Free to play in your browser!">
-<meta property="og:image" content="logo.png">
+<link rel="canonical" href="https://findingpenguin.com/">
+<meta name="description" content="Finding Penguin is a free 3D browser game — help Laila cross the endless snowfields to find her lost penguin Waddler. A heartwarming love story you can play on mobile or desktop. No download needed!">
+<meta name="keywords" content="finding penguin, penguin game, free online game, 3D browser game, HTML5 game, cute penguin game, snow adventure, mobile game, casual game, family game, kids game, love story game, free to play, penguin adventure, arctic game, CrazyGames, WebGL game, penguin search game, Laila Waddler, finding penguin game">
+<meta name="author" content="Finding Penguin">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Finding Penguin 🐧 — Free 3D Penguin Adventure Game">
+<meta property="og:description" content="Help Laila find Waddler across the endless snowfields! A charming free 3D adventure game playable in your browser. No download needed. 💙">
+<meta property="og:image" content="https://findingpenguin.com/logo.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:url" content="https://findingpenguin.com/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Finding Penguin">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Finding Penguin 🐧">
-<meta name="twitter:description" content="A charming 3D penguin love story. Find Waddler in the snow!">
+<meta name="twitter:title" content="Finding Penguin 🐧 — Free 3D Penguin Game">
+<meta name="twitter:description" content="Help Laila find Waddler in this charming free 3D snow adventure. Play now in your browser! ❄️💙">
+<meta name="twitter:image" content="https://findingpenguin.com/logo.png">
+<meta name="twitter:site" content="@findingpenguin">
 <meta name="theme-color" content="#7aa8d8">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoGame","name":"Finding Penguin","description":"A free 3D browser adventure game where Laila searches the endless snowfields to reunite with her lost penguin Waddler.","url":"https://findingpenguin.com","image":"https://findingpenguin.com/logo.png","genre":["Adventure","Casual","Family"],"gamePlatform":["Web Browser","Mobile Browser"],"applicationCategory":"Game","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"Finding Penguin","sameAs":["https://www.tiktok.com/@findingpenguin","https://www.youtube.com/@PlayFindingPenguin","https://www.instagram.com/finding.penguin"]}}
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#b8d8f0;overflow:hidden;font-family:'Courier New',monospace;user-select:none;-webkit-user-select:none;}
@@ -40,12 +52,14 @@ canvas{display:block;}
 /* INTRO */
 #intro-screen{background:linear-gradient(180deg,#7aa8d8 0%,#a8cef0 40%,#c8e8ff 70%,#e8f6ff 100%);}
 #intro-canvas{position:absolute;inset:0;width:100%;height:100%;}
-#intro-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:24px;}
-#ititle{font-size:clamp(32px,6vw,64px);color:#0d2550;letter-spacing:8px;font-weight:bold;text-shadow:0 3px 20px rgba(80,140,255,.4),0 1px 0 rgba(255,255,255,.3);margin-bottom:4px;}
-#isub{font-size:clamp(11px,2.2vw,16px);color:#2a5898;letter-spacing:4px;margin-bottom:16px;opacity:.9;}
-#istory-box{background:rgba(255,255,255,.25);backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.5);border-radius:16px;padding:20px 32px;max-width:460px;margin-bottom:36px;}
-#istory{font-size:clamp(11px,1.8vw,15px);color:#1a3a70;letter-spacing:1.5px;line-height:2.2;text-align:center;}
+#intro-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:20px 24px;gap:14px;}
+#ititle{font-size:clamp(28px,5.5vw,60px);color:#0d2550;letter-spacing:8px;font-weight:bold;text-shadow:0 3px 20px rgba(80,140,255,.4),0 1px 0 rgba(255,255,255,.3);}
+#isub{font-size:clamp(11px,2vw,15px);color:#2a5898;letter-spacing:4px;opacity:.9;margin-top:-6px;}
+#istory-box{background:rgba(255,255,255,.25);backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.5);border-radius:16px;padding:16px 28px;max-width:520px;width:90%;}
+#istory{font-size:clamp(12px,1.9vw,15px);color:#1a3a70;letter-spacing:1px;line-height:1.9;text-align:center;}
 #istory em{color:#0d2550;font-style:normal;font-weight:bold;}
+#intro-visits{color:rgba(100,180,255,.85);font-size:10px;letter-spacing:2px;text-align:center;}
+#intro-social{position:absolute;bottom:18px;left:0;right:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;z-index:3;padding:0 12px;}
 .glassy-btn{background:rgba(255,255,255,.3);backdrop-filter:blur(14px);border:2px solid rgba(100,180,255,.6);color:#0d2550;font-family:'Courier New',monospace;font-size:14px;letter-spacing:5px;padding:14px 44px;cursor:pointer;border-radius:6px;text-transform:uppercase;transition:all .25s;box-shadow:0 4px 20px rgba(80,140,255,.2);}
 .glassy-btn:hover{background:rgba(255,255,255,.55);transform:translateY(-3px);box-shadow:0 8px 30px rgba(80,140,255,.35);}
 
@@ -55,10 +69,16 @@ canvas{display:block;}
 #found-screen p{color:#2a5898;font-size:14px;letter-spacing:1.5px;margin-bottom:28px;line-height:2.2;}
 .dark-btn{background:#1a3a6a;color:#fff;border:none;font-family:'Courier New',monospace;font-size:12px;letter-spacing:3px;padding:12px 36px;cursor:pointer;border-radius:4px;text-transform:uppercase;transition:background .2s;}
 .dark-btn:hover{background:#2a5aaa;}
+.social-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.soc-btn{display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-family:'Courier New',monospace;letter-spacing:1px;font-weight:bold;text-decoration:none;transition:transform .15s,opacity .15s;}
+.soc-btn:hover{transform:translateY(-2px);opacity:.85;}
+.soc-btn.tiktok{background:#010101;color:#fff;}
+.soc-btn.youtube{background:#ff0000;color:#fff;}
+.soc-btn.instagram{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;}
+.soc-btn svg{width:16px;height:16px;fill:currentColor;flex-shrink:0;}
 
 /* VISIT COUNTER */
 #visit-badge{position:fixed;bottom:52px;left:12px;background:rgba(20,40,80,.72);backdrop-filter:blur(10px);border:1px solid rgba(100,160,255,.35);border-radius:16px;padding:5px 13px;color:#c8e4ff;font-size:10px;letter-spacing:1.5px;pointer-events:none;z-index:10;text-shadow:0 1px 4px rgba(0,0,80,.6);}
-#intro-stats{margin-top:14px;color:rgba(140,200,255,.8);font-size:10px;letter-spacing:1.5px;}
 
 /* INTRO BUTTON PULSE */
 @keyframes btnpulse{0%,100%{box-shadow:0 4px 20px rgba(80,140,255,.2);}50%{box-shadow:0 4px 32px rgba(80,180,255,.55),0 0 0 4px rgba(100,180,255,.2);}}
@@ -158,30 +178,59 @@ canvas{display:block;}
   <canvas id="intro-canvas"></canvas>
   <div id="intro-content">
     <div id="ititle">FINDING PENGUIN</div>
-    <div id="isub">a love story in the snow</div>
+    <div id="isub">a love story in the snow ❄️</div>
+
     <div id="istory-box">
       <div id="istory">
-        <em>Waddler</em> wandered off into the endless snowfields,<br>
-        curious and carefree... further and further...<br>
-        until the white swallowed him whole.<br><br>
-        Now <em>Laila</em> sets off across the frozen world<br>
-        to find her mate and bring him home.
+        <em>Waddler</em> wandered into the endless snowfields and disappeared.<br>
+        Now <em>Laila</em> crosses the frozen world to bring him home. 💙
       </div>
     </div>
+
     <button class="glassy-btn" onclick="startGame()">▶ &nbsp;BEGIN THE SEARCH</button>
-    <div style="color:rgba(100,180,255,.8);font-size:10px;letter-spacing:2px;margin-top:10px;text-align:center;">↑ click anytime to begin</div>
-    <div id="intro-stats">👣 <span id="intro-visit-count">…</span> adventures &nbsp;·&nbsp; 🐧 <span id="intro-online-count">…</span> exploring now</div>
+    <div id="intro-visits">👣 <span id="intro-visit-count">…</span> adventures played</div>
+    <span id="intro-online-count" style="display:none"></span><!-- kept for JS compat -->
+  </div>
+
+  <!-- Social footer — pinned to very bottom of intro screen -->
+  <div id="intro-social">
+    <a class="soc-btn tiktok" href="https://www.tiktok.com/@findingpenguin" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.17 8.17 0 004.79 1.53V6.75a4.85 4.85 0 01-1.02-.06z"/></svg>
+      @findingpenguin
+    </a>
+    <a class="soc-btn youtube" href="https://www.youtube.com/@PlayFindingPenguin" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 00.5 6.19 31.6 31.6 0 000 12a31.6 31.6 0 00.5 5.81 3.02 3.02 0 002.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 002.12-2.14A31.6 31.6 0 0024 12a31.6 31.6 0 00-.5-5.81zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>
+      YouTube
+    </a>
+    <a class="soc-btn instagram" href="https://www.instagram.com/finding.penguin" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      Instagram
+    </a>
   </div>
 </div>
 
 <!-- FOUND -->
 <div class="fullscreen" id="found-screen">
   <h2 style="margin-bottom:12px">Selfie time! 📸</h2>
-  <canvas id="portrait-canvas" style="border-radius:16px;box-shadow:0 8px 40px rgba(60,120,220,.4);max-width:min(320px,80vw);max-height:min(320px,45vh);margin-bottom:18px;display:block;"></canvas>
+  <canvas id="portrait-canvas" style="border-radius:16px;box-shadow:0 8px 40px rgba(60,120,220,.4);max-width:min(320px,80vw);max-height:min(320px,45vh);margin-bottom:14px;display:block;"></canvas>
   <p id="found-msg">Laila found Waddler! 💙</p>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;">
-    <button class="dark-btn" id="share-btn" onclick="sharePortrait()">📸 &nbsp;Share on Instagram</button>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;">
+    <button class="dark-btn" id="share-btn" onclick="sharePortrait()">📸 &nbsp;Share Selfie</button>
     <button class="dark-btn" onclick="nextRound()" style="background:#1a5a2a;">▶ &nbsp;Wander Again</button>
+  </div>
+  <div class="social-row">
+    <a class="soc-btn tiktok" href="https://www.tiktok.com/@findingpenguin" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.17 8.17 0 004.79 1.53V6.75a4.85 4.85 0 01-1.02-.06z"/></svg>
+      @findingpenguin
+    </a>
+    <a class="soc-btn youtube" href="https://www.youtube.com/@PlayFindingPenguin" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 00.5 6.19 31.6 31.6 0 000 12a31.6 31.6 0 00.5 5.81 3.02 3.02 0 002.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 002.12-2.14A31.6 31.6 0 0024 12a31.6 31.6 0 00-.5-5.81zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>
+      @PlayFindingPenguin
+    </a>
+    <a class="soc-btn instagram" href="https://www.instagram.com/finding.penguin" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      finding.penguin
+    </a>
   </div>
 </div>
 
@@ -317,10 +366,12 @@ canvas{display:block;}
   const DEFAULT_WORKER='https://finding-penguin-worker.domain-sparrow.workers.dev';
   function workerUrl(){try{const d=localStorage.getItem('fp_settings');if(d){const s=JSON.parse(d);if(s.workerUrl)return s.workerUrl.trim();}}catch(e){}return DEFAULT_WORKER;}
   function pingSession(){
+    if(document.hidden)return; // don't ping while tab is in background
     const u=workerUrl();if(!u)return;
     fetch(u+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sid})}).catch(()=>{});
   }
   function fetchOnline(){
+    if(document.hidden)return;
     const u=workerUrl();if(!u)return;
     fetch(u+'/sessions').then(r=>r.json()).then(d=>{
       if(typeof d.count==='number'){
@@ -330,10 +381,10 @@ canvas{display:block;}
       }
     }).catch(()=>{});
   }
-  // Ping immediately + every 15s; fetch count every 20s
+  // Ping once on load, then every 60s; fetch online count every 90s
   pingSession();fetchOnline();
-  setInterval(pingSession,15000);
-  setInterval(fetchOnline,20000);
+  setInterval(pingSession,60000);
+  setInterval(fetchOnline,90000);
 })();
 
 // ════════════════════════════════════════════
@@ -346,21 +397,75 @@ const IFP=[];let IPhase='walk';
 function rsI(){IW=IC.width=window.innerWidth;IH=IC.height=window.innerHeight;}rsI();
 
 function drawIP(ctx,x,y,st,al,sc){
-  ctx.save();ctx.globalAlpha=Math.max(0,al);ctx.translate(x,y);ctx.scale(sc,sc);
-  const b=st%2?-3:0,lg=st%2?4:-4;
-  ctx.fillStyle='rgba(60,100,180,.12)';ctx.beginPath();ctx.ellipse(0,22,18,6,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#111128';ctx.beginPath();ctx.ellipse(0,2+b,12,16,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#f0f2f8';ctx.beginPath();ctx.ellipse(0,4+b,8,11,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#111128';ctx.beginPath();ctx.arc(0,-16+b,12,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(5,-18+b,4,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#000';ctx.beginPath();ctx.arc(6.5,-18+b,2.2,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#f0a020';ctx.beginPath();ctx.moveTo(9,-16+b);ctx.lineTo(17,-14+b);ctx.lineTo(9,-12+b);ctx.closePath();ctx.fill();
-  ctx.fillStyle='#111128';
-  ctx.beginPath();ctx.ellipse(-14,-2+b,5,10,-.3,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(14,-2+b+lg*.3,5,10,.3,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#f0a020';
-  ctx.beginPath();ctx.ellipse(-5,18+b,6,3,.3,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(5,18+b+lg*.3,6,3,-.3,0,Math.PI*2);ctx.fill();
+  // Pixel-art blocky penguin — front-facing, matches 3D model style
+  ctx.save();
+  ctx.globalAlpha=Math.max(0,al);
+  ctx.translate(x,y);
+  ctx.scale(sc,sc);
+
+  const bob=st%2?-1.5:0; // gentle vertical walk bob
+  // All coords are centred on (0,0) = mid-body. Positive Y = down.
+  const N='#111128'; // navy
+  const W='#ffffff'; // white
+  const Y='#e8a800'; // yellow/orange
+
+  function r(rx,ry,rw,rh,c){
+    ctx.fillStyle=c;
+    ctx.fillRect(Math.round(rx-rw/2), Math.round(ry-rh/2+bob), Math.round(rw), Math.round(rh));
+  }
+
+  // ── Drop shadow ───────────────────────────────────────────────
+  ctx.fillStyle='rgba(30,60,120,.18)';
+  ctx.beginPath();ctx.ellipse(0,32+bob,14,4,0,0,Math.PI*2);ctx.fill();
+
+  // ── Feet (yellow, two blocks) ─────────────────────────────────
+  r(-8, 27, 13, 6, Y);
+  r( 8, 27, 13, 6, Y);
+  // toe forward nubs
+  r(-11,29,4,4,Y); r(-8,29,4,4,Y); r(-5,29,4,4,Y);
+  r(  5,29,4,4,Y); r( 8,29,4,4,Y); r(11,29,4,4,Y);
+
+  // ── Leg stubs (orange connector blocks) ───────────────────────
+  r(-8,20,8,8,Y);
+  r( 8,20,8,8,Y);
+
+  // ── Main body (wide dark navy block) ─────────────────────────
+  r(0, 4, 34, 30, N);
+
+  // ── White belly (tall white panel centred on front) ───────────
+  r(0, 6, 20, 26, W);
+
+  // ── Left wing (dark, angled outward from body side) ───────────
+  ctx.save();
+  ctx.translate(-20, 4+bob);
+  ctx.rotate(st%2 ? -0.22 : -0.12);
+  ctx.fillStyle=N;
+  ctx.fillRect(-4,-14,8,26);
+  ctx.restore();
+
+  // ── Right wing ───────────────────────────────────────────────
+  ctx.save();
+  ctx.translate(20, 4+bob);
+  ctx.rotate(st%2 ? 0.22 : 0.12);
+  ctx.fillStyle=N;
+  ctx.fillRect(-4,-14,8,26);
+  ctx.restore();
+
+  // ── Tail (small dark block at bottom-back) ────────────────────
+  r(0, 18, 10, 6, '#0d0d20');
+
+  // ── Head (square block, slightly narrower than body) ──────────
+  r(0,-16, 28, 28, N);
+
+  // ── Eyes: white square + black pupil ─────────────────────────
+  r(-7,-22, 6, 6, W);
+  r( 7,-22, 6, 6, W);
+  r(-7,-22, 3, 3, '#000');
+  r( 7,-22, 3, 3, '#000');
+
+  // ── Beak (yellow, wide short block, centre-low on head) ───────
+  r(0,-16, 11, 5, Y);
+
   ctx.restore();
 }
 
@@ -500,7 +605,7 @@ function buildMats(){
     gnd:  new THREE.MeshLambertMaterial({color:0xf2f9ff}),
     // penguin core
     pB:   new THREE.MeshLambertMaterial({color:0x111128}),
-    pW:   new THREE.MeshLambertMaterial({color:0xf0f2f8}),
+    pW:   new THREE.MeshLambertMaterial({color:0xffffff,emissive:0xaabbcc,emissiveIntensity:0.55}),
     pO:   new THREE.MeshLambertMaterial({color:0xf0a020}),
     pE:   new THREE.MeshLambertMaterial({color:0xffffff}),
     pP:   new THREE.MeshLambertMaterial({color:0x050510}),
@@ -1026,54 +1131,75 @@ function applyReunion(dt){
 function renderPortrait(){
   const pc=document.getElementById('portrait-canvas');
   if(!pc||!renderer||!scene)return;
-  // Temporarily snap Waddler beside Laila for the selfie photo
+  // Snap Waddler beside Laila
   const sideOffset=2.5*PS;
   const snapWx=lPos.x+sideOffset, snapWz=lPos.z;
   const savedWx=waddlerGroup.position.x, savedWz=waddlerGroup.position.z;
   waddlerGroup.position.set(snapWx,terrainH(snapWx,snapWz)+0.17*PS,snapWz);
-  // Portrait camera — in FRONT of the penguins (positive Z direction from them)
+  // Camera framed tightly on the penguin bodies — low FOV, looking straight at chest height
   const mx=(lPos.x+snapWx)/2, mz=lPos.z;
   const mGy=terrainH(mx,mz);
-  const portCam=new THREE.PerspectiveCamera(40,1,0.5,1400);
-  portCam.position.set(mx,mGy+3.5,mz+6);
-  portCam.lookAt(mx,mGy+1.8,mz);
-  // Rotate BOTH penguins to face the portrait camera before rendering
+  const penguinChestY=mGy+0.17*PS+2.2*PS; // ~chest height of penguin
+  const portCam=new THREE.PerspectiveCamera(28,1,0.5,1400);
+  portCam.position.set(mx,penguinChestY+0.5,mz+8);
+  portCam.lookAt(mx,penguinChestY,mz);
+  // Face both penguins toward camera
   const pfAngle=Math.atan2(portCam.position.x-mx, portCam.position.z-mz);
   const savedLRot=lailaGroup.rotation.y, savedWRot=waddlerGroup.rotation.y;
   lailaGroup.rotation.y=-pfAngle;
-  waddlerGroup.rotation.y=-pfAngle; // both face exactly the same direction for photo
-  // Ensure wings are fully spread for the portrait
+  waddlerGroup.rotation.y=-pfAngle;
+  // Wings spread for photo
   if(lWL)lWL.rotation.z=-1.2; if(lWR)lWR.rotation.z=1.2;
   if(wWL)wWL.rotation.z=-1.2; if(wWR)wWR.rotation.z=1.2;
-  // Render at 512×512 — force pixelRatio=1 so drawImage copies exactly 512×512 pixels
+  // Hide ground mesh so only penguins + sky render
+  const gndMesh=scene.getObjectByName('ground');
+  if(gndMesh)gndMesh.visible=false;
+  // Strong ambient so belly is pure white
+  const portAmbient=new THREE.AmbientLight(0xffffff,2.0);
+  scene.add(portAmbient);
+  // Render with transparent background so we can composite over our own gradient
   const savedPR=renderer.getPixelRatio();
   renderer.setPixelRatio(1);
+  renderer.setClearColor(0x7ab8e8,1); // sky blue — ground hidden so only sky + penguins render
   renderer.setSize(512,512,false);
   renderer.render(scene,portCam);
-  // Copy pixels to portrait canvas BEFORE restoring renderer size
+  // Set up 512×512 portrait canvas
   pc.width=512;pc.height=512;
   const ctx=pc.getContext('2d');
+  // 1. Draw sky-snow gradient background
+  const bg=ctx.createLinearGradient(0,0,0,512);
+  bg.addColorStop(0,'#7ab8e8');bg.addColorStop(0.55,'#b8d8f0');bg.addColorStop(0.75,'#ddf0ff');bg.addColorStop(1,'#eef8ff');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,512,512);
+  // 2. Draw snowy hill at bottom
+  ctx.fillStyle='#dff0ff';ctx.beginPath();ctx.moveTo(0,400);
+  for(let x=0;x<=512;x+=32)ctx.lineTo(x,390+Math.sin(x*.025)*18);
+  ctx.lineTo(512,512);ctx.lineTo(0,512);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#eef8ff';ctx.beginPath();ctx.moveTo(0,430);
+  for(let x=0;x<=512;x+=24)ctx.lineTo(x,425+Math.sin(x*.033+1)*12);
+  ctx.lineTo(512,512);ctx.lineTo(0,512);ctx.closePath();ctx.fill();
+  // 3. Composite the 3D render on top
   ctx.drawImage(renderer.domElement,0,0,512,512);
-  // ── Restore renderer immediately after pixel copy ──────────────
+  // ── Restore everything ─────────────────────────────────────────
+  if(gndMesh)gndMesh.visible=true;
+  scene.remove(portAmbient);
+  renderer.setClearColor(0x87ceeb,1);
   renderer.setPixelRatio(savedPR);
   renderer.setSize(window.innerWidth,window.innerHeight,false);
-  // Restore rotations
   lailaGroup.rotation.y=savedLRot; waddlerGroup.rotation.y=savedWRot;
-  // Restore Waddler to its actual position
   waddlerGroup.position.set(savedWx,terrainH(savedWx,savedWz)+0.17*PS,savedWz);
   // ── Text overlay ──────────────────────────────────────────────
-  ctx.fillStyle='rgba(0,0,0,0.40)';
-  ctx.fillRect(0,358,512,154);
+  ctx.fillStyle='rgba(10,30,80,0.38)';
+  ctx.fillRect(0,370,512,142);
   ctx.textAlign='center';
-  ctx.fillStyle='#ff77cc';
-  ctx.font='bold 30px Courier New';
-  ctx.fillText('Laila & Waddler',256,403);
+  ctx.fillStyle='#ff88dd';
+  ctx.font='bold 28px Courier New';
+  ctx.fillText('Laila & Waddler',256,412);
   ctx.fillStyle='#ffffff';
-  ctx.font='bold 24px Courier New';
-  ctx.fillText('Happily Ever After \u2728',256,445);
-  ctx.font='36px serif';
-  ctx.fillText('\uD83D\uDC99',185,115);  // 💙
-  ctx.fillText('\uD83D\uDC97',315,88);   // 💗
+  ctx.font='bold 22px Courier New';
+  ctx.fillText('Happily Ever After \u2728',256,450);
+  ctx.font='38px serif';
+  ctx.fillText('\uD83D\uDC99',175,110);  // 💙
+  ctx.fillText('\uD83D\uDC97',320,82);   // 💗
 }
 
 function sharePortrait(){

@@ -1,29 +1,17 @@
 /**
  * Finding Penguin — Cloudflare Worker
- * Handles POI click analytics and player session counts.
- *
- * ── SETUP ────────────────────────────────────────────────────────────────────
- * 1. Create a KV namespace in Cloudflare dashboard → "KV" → New namespace
- *    Name it:  ANALYTICS
- *
- * 2. Add to wrangler.toml:
- *    [[kv_namespaces]]
- *    binding = "ANALYTICS"
- *    id = "<your-namespace-id>"
- *
- * 3. Deploy:
- *    npx wrangler deploy
  *
  * ── ENDPOINTS ────────────────────────────────────────────────────────────────
- * POST /visit                    — increment global page visit counter, return new total
- * GET  /visits                   — return {count: N} total visits ever
- * POST /click?id=poi_xxx         — increment click count for a POI
- * GET  /stats                    — return {poi_id: count, ...} for all POIs
- * POST /session                  — register an active player (TTL 30s)
- * GET  /sessions                 — return {count: N} active players right now
+ * POST /visit                    — increment global page visit counter (KV), return total
+ * GET  /visits                   — return {count: N} total visits ever (KV)
+ * POST /click?id=poi_xxx         — increment click count for a POI (KV)
+ * GET  /stats                    — return {poi_id: count, ...} for all POIs (KV)
+ * POST /session                  — register active player (in-memory, zero KV)
+ * GET  /sessions                 — return {count: N} active players (in-memory)
  *
- * ── CORS ─────────────────────────────────────────────────────────────────────
- * All responses include CORS headers so the game (any origin) can call freely.
+ * Sessions are tracked purely in-memory (no KV) using a Map with timestamps.
+ * Workers may spin up multiple isolates so the count is approximate — fine for
+ * a "players online" badge.  KV is only used for persistent data (visits, clicks).
  */
 
 const CORS = {
@@ -39,18 +27,28 @@ function json(data, status = 200) {
   });
 }
 
+// ── In-memory session store (zero KV cost) ───────────────────────────────────
+// sid → last-seen timestamp (ms). Entries older than SESSION_TTL are stale.
+const sessions = new Map();
+const SESSION_TTL = 90_000; // 90s — matches the slower client ping interval
+
+function pruneSessions() {
+  const cutoff = Date.now() - SESSION_TTL;
+  for (const [sid, ts] of sessions) {
+    if (ts < cutoff) sessions.delete(sid);
+  }
+}
+
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
+    const url  = new URL(request.url);
     const path = url.pathname;
 
-    // Preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
     }
 
-    // ── POST /visit ─────────────────────────────────────────────
-    // Increment global page visit counter; returns new total.
+    // ── POST /visit ──────────────────────────────────────────────
     if (request.method === 'POST' && path === '/visit') {
       const current = parseInt(await env.FPANALYTICS.get('global:visits') || '0');
       const next = current + 1;
@@ -64,20 +62,19 @@ export default {
       return json({ count });
     }
 
-    // ── POST /click?id=poi_xxx ──────────────────────────────────
+    // ── POST /click?id=poi_xxx ───────────────────────────────────
     if (request.method === 'POST' && path === '/click') {
       const id = url.searchParams.get('id');
       if (!id) return json({ error: 'missing id' }, 400);
-
-      const key = 'click:' + id;
+      const key     = 'click:' + id;
       const current = parseInt(await env.FPANALYTICS.get(key) || '0');
       await env.FPANALYTICS.put(key, String(current + 1));
       return json({ ok: true, id, count: current + 1 });
     }
 
-    // ── GET /stats ──────────────────────────────────────────────
+    // ── GET /stats ───────────────────────────────────────────────
     if (request.method === 'GET' && path === '/stats') {
-      const list = await env.FPANALYTICS.list({ prefix: 'click:' });
+      const list  = await env.FPANALYTICS.list({ prefix: 'click:' });
       const stats = {};
       for (const key of list.keys) {
         const poiId = key.name.replace('click:', '');
@@ -86,20 +83,19 @@ export default {
       return json(stats);
     }
 
-    // ── POST /session ───────────────────────────────────────────
-    // Each game client posts here every ~15s with a unique session ID.
-    // KV TTL of 35s means a session expires if it stops pinging.
+    // ── POST /session  (in-memory, NO KV) ───────────────────────
     if (request.method === 'POST' && path === '/session') {
       const body = await request.json().catch(() => ({}));
-      const sid = body.sid || 'unknown';
-      await env.FPANALYTICS.put('session:' + sid, '1', { expirationTtl: 35 });
+      const sid  = body.sid || 'unknown';
+      sessions.set(sid, Date.now());
+      pruneSessions();
       return json({ ok: true });
     }
 
-    // ── GET /sessions ────────────────────────────────────────────
+    // ── GET /sessions  (in-memory, NO KV) ───────────────────────
     if (request.method === 'GET' && path === '/sessions') {
-      const list = await env.FPANALYTICS.list({ prefix: 'session:' });
-      return json({ count: list.keys.length });
+      pruneSessions();
+      return json({ count: sessions.size });
     }
 
     return json({ error: 'not found' }, 404);
